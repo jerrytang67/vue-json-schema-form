@@ -1,9 +1,9 @@
 {
-    "name": "@lljj/vue3-form-element",
+    "name": "@lljj/vue3-form-ant",
     "version": "1.0.2",
-    "description": "基于 Vue3 、ElementPlus、JsonSchema快速构建一个带完整校验的form表单",
-    "main": "dist/vue3-form-element.umd.min.js",
-    "module": "dist/vue3-form-element.esm.min.js",
+    "description": "基于 Vue3 、Antdv、JsonSchema快速构建一个带完整校验的form表单",
+    "main": "dist/vue3-form-ant.umd.min.js",
+    "module": "dist/vue3-form-ant.esm.min.js",
     "scripts": {
         "watch": "node scripts/watch.js",
         "build": "node scripts/build.js"

@@ -200,14 +200,15 @@ import schemaTypes from 'demo-common/schemaTypes';
 
 const VueElementForm = defineAsyncComponent(() => import('@lljj/vue3-form-element/src/index'));
 
-// const VueAntForm = async () => {
-//     const [iview, ivewForm] = await Promise.all([
-//         import('demo-common/components/iView/index.js'),
-//         import('@lljj/vue2-form-iview3')
-//     ]);
-//
-//     return ivewForm;
-// };
+const VueAntForm = async () => {
+    // eslint-disable-next-line no-unused-vars
+    const [antdv, antForm] = await Promise.all([
+        import('demo-common/components/Antdv/index.js'),
+        import('@lljj/vue3-form-ant/src/index')
+    ]);
+
+    return antForm;
+};
 
 const typeItems = Object.keys(schemaTypes);
 
