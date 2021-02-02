@@ -16,8 +16,8 @@ import './style.css';
 const globalOptions = {
     WIDGET_MAP,
     COMPONENT_MAP: {
-        form: 'el-form',
-        formItem: 'el-form-item',
+        form: 'a-form',
+        formItem: 'a-form-item',
         button: 'el-button',
         popover: 'el-popover'
     },

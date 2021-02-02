@@ -3,7 +3,9 @@
  */
 
 import Antd from 'ant-design-vue';
-import 'ant-design-vue/dist/antd.css';
+
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import '!vue-style-loader!css-loader?modules!ant-design-vue/dist/antd.css';
 
 export default {
     install(app) {

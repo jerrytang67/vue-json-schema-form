@@ -127,7 +127,7 @@ module.exports = {
         extract: isProduction,
         loaderOptions: {
             postcss: {
-                exclude: /(node_modules\/ant-design-vue)/,
+                // exclude: /(node_modules\/ant-design-vue)/,
             }
         }
     },
