@@ -18,8 +18,8 @@ const globalOptions = {
     COMPONENT_MAP: {
         form: 'a-form',
         formItem: 'a-form-item',
-        button: 'el-button',
-        popover: 'el-popover'
+        button: 'a-button',
+        popover: 'a-popover'
     },
     ICONS_MAP: {
         question: 'el-icon-question',
