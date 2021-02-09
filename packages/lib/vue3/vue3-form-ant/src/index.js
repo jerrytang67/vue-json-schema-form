@@ -2,6 +2,7 @@
  * Created by Liu.Jun on 2019/11/29 11:25.
  */
 
+import { h } from 'vue';
 import createVue3Core, { fieldProps, SchemaField } from '@lljj/vue3-form-core';
 
 import i18n from '@lljj/vjsf-utils/i18n';
@@ -17,9 +18,27 @@ const globalOptions = {
     WIDGET_MAP,
     COMPONENT_MAP: {
         form: 'a-form',
-        formItem: 'a-form-item',
+        // formItem: 'a-form-item',
+        formItem: {
+            setup(props, { attrs, slots }) {
+                return () => {
+                    const { prop, ...originAttrs } = attrs;
+
+                    return h(vueUtils.resolveComponent('a-form-item'), {
+                        ...originAttrs,
+                        name: prop
+                    }, slots);
+                };
+            }
+        },
         button: 'a-button',
-        popover: 'a-popover'
+        popover: {
+            setup(props, { attrs, slots }) {
+                return () => h(vueUtils.resolveComponent('a-popover'), {
+                }, slots);
+            }
+        },
+
     },
     ICONS_MAP: {
         question: 'el-icon-question',

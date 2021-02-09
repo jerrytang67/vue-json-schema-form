@@ -190,13 +190,12 @@ export default {
                 },
                 placement: 'top',
                 trigger: 'hover'
-            }, [
-                descriptionVNode,
-                h('i', {
-                    slot: 'reference',
+            }, {
+                default: () => descriptionVNode,
+                reference: () => h('i', {
                     class: ICONS_MAP.question
                 })
-            ]) : null;
+            }) : null;
 
             // form-item style
             const formItemStyle = {
