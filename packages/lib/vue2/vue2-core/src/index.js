@@ -148,7 +148,6 @@ export default function createForm(globalOptions = {}) {
                 {
                     class: {
                         genFromComponent: true,
-                        [`formLabel-${props.formProps.labelPosition}`]: true,
                         formInlineFooter: formProps.inlineFooter,
                         formInline: formProps.inline,
                         [`genFromComponent_${this.schema.id}Form`]: !!this.schema.id,

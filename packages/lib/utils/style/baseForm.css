@@ -237,19 +237,17 @@
         }
     }
     &.formInline {
+        .genFormItem {
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: top;
+        }
         .validateWidget {
             margin-right: 0;
         }
         .formFooter_item {
             border-top: none;
             padding-top: 0;
-        }
-    }
-
-    /* el-form 重置样式*/
-    &.formLabel-top {
-        .arrayListItem_content {
-            padding-top: 8px;
         }
     }
 }

@@ -129,8 +129,7 @@ export default function createForm(globalOptions = {}) {
                 return [];
             };
 
-
-            const childProps = computed(() => {
+            return () => {
                 const { layoutColumn = 1, ...formProps } = props.formProps;
                 const schemaProps = {
                     schema: props.schema,
@@ -149,40 +148,32 @@ export default function createForm(globalOptions = {}) {
                     }
                 };
 
-                return {
-                    layoutColumn,
-                    schemaProps,
-                };
-            });
-
-            return () => h(
-                resolveComponent(globalOptions.COMPONENT_MAP.form),
-                {
-                    class: {
-                        genFromComponent: true,
-                        [`formLabel-${childProps.value.schemaProps.formProps.labelPosition}`]: true,
-                        formInlineFooter: childProps.value.schemaProps.formProps.inlineFooter,
-                        formInline: childProps.value.schemaProps.inline,
-                        [`genFromComponent_${props.schema.id}Form`]: !!props.schema.id,
-                        layoutColumn: !childProps.value.schemaProps.inline,
-                        [`layoutColumn-${childProps.value.layoutColumn}`]: !childProps.value.schemaProps.inline
+                return h(
+                    resolveComponent(globalOptions.COMPONENT_MAP.form),
+                    {
+                        class: {
+                            genFromComponent: true,
+                            [`genFromComponent_${props.schema.id}Form`]: !!props.schema.id,
+                            formInlineFooter: schemaProps.formProps.inlineFooter,
+                            formInline: schemaProps.formProps.inline,
+                            layoutColumn: !schemaProps.formProps.inline,
+                            [`layoutColumn-${layoutColumn}`]: !schemaProps.formProps.inline
+                        },
+                        ref: formRef,
+                        model: rootFormData,
+                        ...schemaProps.formProps
                     },
-                    ref: formRef,
-                    model: rootFormData,
-                    ...childProps.value.schemaProps.formProps
-                },
-                {
-                    default: () => [
-                        h(
-                            SchemaField,
-                            {
-                                ...childProps.value.schemaProps
-                            }
-                        ),
-                        getDefaultSlot(),
-                    ]
-                }
-            );
+                    {
+                        default: () => [
+                            h(
+                                SchemaField,
+                                schemaProps
+                            ),
+                            getDefaultSlot(),
+                        ]
+                    }
+                );
+            };
         },
     };
 
