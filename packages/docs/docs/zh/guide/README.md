@@ -31,7 +31,7 @@
 ### @lljj/vue3-form-element
 * 适配ui库：`Vue3` `ElementPlus`
 * package name : `@lljj/vue3-form-element`
-* umd cdn地址：[@lljj/vue2-form-iview3 cdn](https://cdn.jsdelivr.net/npm/@lljj/vue3-form-element/dist/vue3-form-element.umd.min.js)
+* umd cdn地址：[@lljj/vue3-form-element cdn](https://cdn.jsdelivr.net/npm/@lljj/vue3-form-element/dist/vue3-form-element.umd.min.js)
 * umd script 标签形式引入暴露全局变量 `window.vue3FormElement`
 
 ### @lljj/vue3-form-ant
@@ -191,6 +191,6 @@ Field props配置，如果需要使用 `ui:field` 自定义field 组件，需要
 
 ## 说明
 * 遵循 JSON Schema 规范，只需要给定 `JSON Schema`，即可生成对应的form表单
-* 快速配置个性化ui视图和校验错误信息，可适配常用的ui库，目前的版本默认视图依赖elementUi，后续版本会解耦开来，可通过配置适配ElementUi，iView 或者你自己开发的组件库等
+* 快速配置个性化ui视图和校验错误信息，可适配常用的ui库，可通过配置适配ElementUi，iView 或者你自己开发的组件库等
 * 表单schema校验使用  [ajv](https://github.com/epoberezkin/ajv)
 * 设计思想和对schema解析索引参考 [react-jsonschema-form](https://github.com/rjsf-team/react-jsonschema-form)

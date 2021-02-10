@@ -167,8 +167,7 @@ export default {
         // 判断是否为根节点
         const isRootNode = isRootNodePath(this.curNodePath);
 
-        // labelPosition left/right
-        const miniDesModel = self.formProps && self.formProps.labelPosition !== 'top';
+        const miniDesModel = self.globalOptions.HELPERS.isMiniDes(self.formProps);
 
         const descriptionVNode = (self.description) ? h(
             'p',
@@ -223,7 +222,7 @@ export default {
                 style: formItemStyle,
                 attrs: self.fieldAttrs,
                 props: {
-                    labelWidth: self.labelWidth,
+                    ...self.labelWidth ? { labelWidth: self.labelWidth } : {},
                     ...this.isFormData ? {
                         // 这里对根节点打特殊标志，绕过elementUi无prop属性不校验
                         prop: isRootNode ? '__$$root' : path2prop(self.curNodePath),

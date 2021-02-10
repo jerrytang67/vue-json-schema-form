@@ -71,7 +71,13 @@ const globalOptions = Object.freeze({
         moveDown: 'ivu-icon ivu-icon-md-arrow-round-down',
         close: 'ivu-icon ivu-icon-md-close',
         plus: 'ivu-icon ivu-icon-md-add'
-    })
+    }),
+    HELPERS: {
+        // 是否mini显示 description
+        isMiniDes(formProps) {
+            return formProps && ['left', 'right'].includes(formProps.labelPosition);
+        }
+    }
 });
 
 const JsonSchemaFormIview3 = createVue2Core(globalOptions);

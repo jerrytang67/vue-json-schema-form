@@ -9877,9 +9877,8 @@ var Widget = {
   render: function render(h) {
     var self = this; // 判断是否为根节点
 
-    var isRootNode = isRootNodePath(this.curNodePath); // labelPosition left/right
-
-    var miniDesModel = self.formProps && self.formProps.labelPosition !== 'top';
+    var isRootNode = isRootNodePath(this.curNodePath);
+    var miniDesModel = self.globalOptions.HELPERS.isMiniDes(self.formProps);
     var descriptionVNode = self.description ? h('p', {
       domProps: {
         innerHTML: self.description
@@ -9918,9 +9917,9 @@ var Widget = {
       }),
       style: formItemStyle,
       attrs: self.fieldAttrs,
-      props: _objectSpread2({
+      props: _objectSpread2(_objectSpread2({}, self.labelWidth ? {
         labelWidth: self.labelWidth
-      }, this.isFormData ? {
+      } : {}), this.isFormData ? {
         // 这里对根节点打特殊标志，绕过elementUi无prop属性不校验
         prop: isRootNode ? '__$$root' : path2prop(self.curNodePath),
         rules: [{
@@ -11387,7 +11386,6 @@ function createForm() {
         globalOptions: globalOptions,
         // 全局配置，差异化ui框架
         formProps: _objectSpread2({
-          labelPosition: 'top',
           labelSuffix: '：'
         }, formProps)
       };
@@ -12054,7 +12052,13 @@ var globalOptions = Object.freeze({
     moveDown: 'ivu-icon ivu-icon-md-arrow-round-down',
     close: 'ivu-icon ivu-icon-md-close',
     plus: 'ivu-icon ivu-icon-md-add'
-  })
+  }),
+  HELPERS: {
+    // 是否mini显示 description
+    isMiniDes: function isMiniDes(formProps) {
+      return formProps && ['left', 'right'].includes(formProps.labelPosition);
+    }
+  }
 });
 var JsonSchemaFormIview3 = createForm(globalOptions); // 存在Vue 全局变量默认注册 VueForm 组件
 

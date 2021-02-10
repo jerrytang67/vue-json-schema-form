@@ -142,7 +142,6 @@ export default function createForm(globalOptions = {}) {
                     curNodePath: '', // 当前节点路径
                     globalOptions, // 全局配置，差异化ui框架
                     formProps: {
-                        labelPosition: 'top',
                         labelSuffix: '：',
                         ...formProps,
                     }

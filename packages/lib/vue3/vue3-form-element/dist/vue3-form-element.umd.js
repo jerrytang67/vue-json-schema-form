@@ -9800,9 +9800,8 @@
 
       return function () {
         // 判断是否为根节点
-        var isRootNode = isRootNodePath(props.curNodePath); // labelPosition left/right
-
-        var miniDesModel = props.formProps && props.formProps.labelPosition !== 'top';
+        var isRootNode = isRootNodePath(props.curNodePath);
+        var miniDesModel = props.globalOptions.HELPERS.isMiniDes(props.formProps);
         var descriptionVNode = props.description ? Vue.h('p', {
           innerHTML: props.description,
           class: {
@@ -9837,14 +9836,14 @@
           paddingRight: '10px'
         } : {});
 
-        return Vue.h(resolveComponent(COMPONENT_MAP.formItem), _objectSpread2(_objectSpread2({
+        return Vue.h(resolveComponent(COMPONENT_MAP.formItem), _objectSpread2(_objectSpread2(_objectSpread2({
           class: _objectSpread2(_objectSpread2({}, props.fieldClass), {}, {
             genFormItem: true
           }),
           style: formItemStyle
-        }, props.fieldAttrs), {}, {
+        }, props.fieldAttrs), props.labelWidth ? {
           labelWidth: props.labelWidth
-        }, props.isFormData ? {
+        } : {}), props.isFormData ? {
           // 这里对根节点打特殊标志，绕过elementUi无prop属性不校验
           prop: isRootNode ? '__$$root' : path2prop(props.curNodePath),
           rules: [{
@@ -11228,7 +11227,6 @@
             globalOptions: globalOptions,
             // 全局配置，差异化ui框架
             formProps: _objectSpread2({
-              labelPosition: 'top',
               labelSuffix: '：'
             }, formProps)
           };
@@ -11745,6 +11743,12 @@
       moveDown: 'el-icon-caret-bottom',
       close: 'el-icon-close',
       plus: 'el-icon-plus'
+    },
+    HELPERS: {
+      // 是否mini显示 description
+      isMiniDes: function isMiniDes(formProps) {
+        return formProps && ['left', 'right'].includes(formProps.labelPosition);
+      }
     }
   };
   var JsonSchemaForm = createForm(globalOptions); // 存在Vue 全局变量默认注册 VueForm 组件
