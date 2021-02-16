@@ -54,7 +54,8 @@ export default function createForm(globalOptions = {}) {
                 ...props.formFooter
             }));
 
-            const formRef = ref(null);
+            // form组件实例，不需要响应式
+            let formRef = null;
 
             // 更新formData
             const emitFormDataChange = (newValue, oldValue) => {
@@ -102,7 +103,7 @@ export default function createForm(globalOptions = {}) {
                 if (slots.default) {
                     return slots.default({
                         formData: rootFormData,
-                        formRefFn: () => formRef.value
+                        formRefFn: () => formRef
                     });
                 }
 
@@ -115,7 +116,8 @@ export default function createForm(globalOptions = {}) {
                             emit('cancel');
                         },
                         onSubmit() {
-                            formRef.value.validate((isValid, resData) => {
+                            // 优先获取组件 $$validate 方法，方便对 validate方法转换
+                            (formRef.$$validate || formRef.validate)((isValid, resData) => {
                                 if (isValid) {
                                     return emit('submit', rootFormData);
                                 }
@@ -130,7 +132,9 @@ export default function createForm(globalOptions = {}) {
             };
 
             return () => {
-                const { layoutColumn = 1, ...formProps } = props.formProps;
+                const {
+                    layoutColumn = 1, inlineFooter, inline, ...otherFormProps
+                } = props.formProps;
                 const schemaProps = {
                     schema: props.schema,
                     uiSchema: props.uiSchema,
@@ -143,7 +147,7 @@ export default function createForm(globalOptions = {}) {
                     globalOptions, // 全局配置，差异化ui框架
                     formProps: {
                         labelSuffix: '：',
-                        ...formProps,
+                        ...otherFormProps,
                     }
                 };
 
@@ -152,13 +156,15 @@ export default function createForm(globalOptions = {}) {
                     {
                         class: {
                             genFromComponent: true,
+                            formInlineFooter: inlineFooter,
+                            formInline: inline,
                             [`genFromComponent_${props.schema.id}Form`]: !!props.schema.id,
-                            formInlineFooter: schemaProps.formProps.inlineFooter,
-                            formInline: schemaProps.formProps.inline,
-                            layoutColumn: !schemaProps.formProps.inline,
-                            [`layoutColumn-${layoutColumn}`]: !schemaProps.formProps.inline
+                            layoutColumn: !inline,
+                            [`layoutColumn-${layoutColumn}`]: !inline
                         },
-                        ref: formRef,
+                        getFormRef: (form) => {
+                            formRef = form;
+                        },
                         model: rootFormData,
                         ...schemaProps.formProps
                     },

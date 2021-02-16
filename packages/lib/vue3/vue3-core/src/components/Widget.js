@@ -124,6 +124,7 @@ export default {
         globalOptions: null // 全局配置
     },
     emits: ['change'],
+    inheritAttrs: false,
     setup(props, { emit }) {
         const widgetValue = computed({
             get() {
@@ -155,10 +156,10 @@ export default {
             }
         }
 
-        // 获取到子组件实例
+        // 获取到widget组件实例
         const widgetRef = ref(null);
         // 提供一种特殊的配置 允许直接访问到 widget vm
-        if (props.getWidget && typeof props.getWidget === 'function') {
+        if (typeof props.getWidget === 'function') {
             watch(widgetRef, () => {
                 props.getWidget.call(null, widgetRef.value);
             });
@@ -171,7 +172,7 @@ export default {
             const miniDesModel = props.globalOptions.HELPERS.isMiniDes(props.formProps);
 
             const descriptionVNode = (props.description) ? h(
-                'p',
+                'div',
                 {
                     innerHTML: props.description,
                     class: {
@@ -235,7 +236,13 @@ export default {
                                         required: props.required,
                                         propPath: path2prop(props.curNodePath)
                                     });
-                                    if (errors.length > 0) return callback(errors[0].message);
+
+                                    // 存在校验不通过字段
+                                    if (errors.length > 0) {
+                                        if (callback) {
+                                            return callback(errors[0].message);
+                                        }
+                                    }
 
                                     // customRule 如果存在自定义校验
                                     const curCustomRule = props.customRule;

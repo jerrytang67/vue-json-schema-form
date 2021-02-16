@@ -4,6 +4,8 @@
 
 // widget 组件对应elementUi 配置表
 
+import { defineComponent, h } from 'vue';
+import { resolveComponent } from '@lljj/vjsf-utils/vue3Utils';
 import widgetComponents from './index';
 
 const {
@@ -18,7 +20,26 @@ const {
 export default {
     types: {
         boolean: 'el-switch',
-        string: 'el-input',
+        string: defineComponent({
+            setup(props, { attrs, slots }) {
+                return () => {
+                    // 太任性antdv 就要用 value
+                    const {
+                        modelValue: value,
+                        'onUpdate:modelValue': onUpdateValue,
+                        ...otherAttrs
+                    } = attrs;
+
+                    return h(resolveComponent('a-input'), {
+                        value,
+                        'onUpdate:value': onUpdateValue,
+                        ...otherAttrs,
+                        ...props
+                    }, slots);
+                };
+            }
+            // 'a-input'
+        }),
         number: 'el-input-number',
         integer: 'el-input-number',
     },

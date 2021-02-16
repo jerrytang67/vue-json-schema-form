@@ -170,7 +170,7 @@ export default {
         const miniDesModel = self.globalOptions.HELPERS.isMiniDes(self.formProps);
 
         const descriptionVNode = (self.description) ? h(
-            'p',
+            'div',
             {
                 domProps: {
                     innerHTML: self.description

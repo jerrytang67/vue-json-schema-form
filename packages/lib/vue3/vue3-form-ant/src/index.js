@@ -2,7 +2,9 @@
  * Created by Liu.Jun on 2019/11/29 11:25.
  */
 
-import { h } from 'vue';
+import {
+    h, ref, onMounted, defineComponent
+} from 'vue';
 import createVue3Core, { fieldProps, SchemaField } from '@lljj/vue3-form-core';
 
 import i18n from '@lljj/vjsf-utils/i18n';
@@ -17,27 +19,83 @@ import './style.css';
 const globalOptions = {
     WIDGET_MAP,
     COMPONENT_MAP: {
-        form: 'a-form',
-        // formItem: 'a-form-item',
-        formItem: {
+        form: defineComponent({
+            inheritAttrs: false,
+            setup(props, { attrs, slots }) {
+                // 处理 labelPosition 参数和layout之间转换
+                const labelPositionMap = {
+                    top: {
+                        labelAlign: 'left',
+                        layout: 'vertical'
+                    },
+                    left: {
+                        layout: 'horizontal',
+                        labelAlign: 'left'
+                    },
+                    right: {
+                        layout: 'horizontal',
+                        labelAlign: 'right'
+                    }
+                };
+
+                // 返回当前的 form ref
+                const formRef = ref(null);
+                if (attrs.getFormRef) {
+                    onMounted(() => {
+                        formRef.value.$$validate = (callBack) => {
+                            formRef.value.validate().then((res) => {
+                                callBack(true, res);
+                            }).catch((err) => {
+                                callBack(false, err.errorFields);
+                            });
+                        };
+                        attrs.getFormRef(formRef.value);
+                    });
+                }
+
+                return () => {
+                    const {
+                        // eslint-disable-next-line no-unused-vars
+                        labelPosition, labelWidth, model, ...otherAttrs
+                    } = attrs;
+
+                    return h(vueUtils.resolveComponent('a-form'), {
+                        ref: formRef,
+                        model: model.value,
+                        ...labelPositionMap[labelPosition || 'top'],
+                        ...otherAttrs
+                    }, slots);
+                };
+            }
+        }),
+        formItem: defineComponent({
+            inheritAttrs: false,
             setup(props, { attrs, slots }) {
                 return () => {
                     const { prop, ...originAttrs } = attrs;
-
                     return h(vueUtils.resolveComponent('a-form-item'), {
                         ...originAttrs,
                         name: prop
                     }, slots);
                 };
             }
-        },
+        }),
         button: 'a-button',
-        popover: {
+        popover: defineComponent({
             setup(props, { attrs, slots }) {
+                const {
+                    default: contentSlot,
+                    reference: defaultSlot,
+                } = slots;
+
                 return () => h(vueUtils.resolveComponent('a-popover'), {
-                }, slots);
+                    attrs
+                }, {
+                    default: defaultSlot,
+                    content: contentSlot,
+                });
             }
-        },
+        }),
 
     },
     ICONS_MAP: {
