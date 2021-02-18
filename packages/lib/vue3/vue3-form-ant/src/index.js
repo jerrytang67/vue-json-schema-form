@@ -42,6 +42,7 @@ const globalOptions = {
                 const formRef = ref(null);
                 if (attrs.getFormRef) {
                     onMounted(() => {
+                        // form组件实例上附加一个 validate 方法
                         formRef.value.$$validate = (callBack) => {
                             formRef.value.validate().then((res) => {
                                 callBack(true, res);
@@ -71,10 +72,16 @@ const globalOptions = {
         formItem: defineComponent({
             inheritAttrs: false,
             setup(props, { attrs, slots }) {
+                const formItemRef = ref(null);
+
+                onMounted(() => {
+                    console.log(formItemRef.value.onFieldBlur);
+                });
                 return () => {
                     const { prop, ...originAttrs } = attrs;
                     return h(vueUtils.resolveComponent('a-form-item'), {
                         ...originAttrs,
+                        ref: formItemRef,
                         name: prop
                     }, slots);
                 };
