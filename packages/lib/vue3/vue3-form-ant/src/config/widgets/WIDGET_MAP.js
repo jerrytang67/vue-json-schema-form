@@ -4,9 +4,9 @@
 
 // widget 组件对应elementUi 配置表
 
-import { defineComponent, h } from 'vue';
-import { resolveComponent } from '@lljj/vjsf-utils/vue3Utils';
+import { h } from 'vue';
 import widgetComponents from './index';
+import { modelValueComponent } from '../utils';
 
 const {
     CheckboxesWidget,
@@ -19,32 +19,22 @@ const {
 
 export default {
     types: {
-        boolean: 'el-switch',
-        string: defineComponent({
-            setup(props, { attrs, slots }) {
-                return () => {
-                    // 太任性antdv 就要用 value
-                    const {
-                        modelValue: value,
-                        'onUpdate:modelValue': onUpdateValue,
-                        ...otherAttrs
-                    } = attrs;
-
-                    return h(resolveComponent('a-input'), {
-                        value,
-                        'onUpdate:value': onUpdateValue,
-                        ...otherAttrs,
-                        ...props
-                    }, slots);
-                };
-            }
-            // 'a-input'
+        boolean: modelValueComponent('a-switch', {
+            model: 'checked'
         }),
-        number: 'el-input-number',
-        integer: 'el-input-number',
+        string: modelValueComponent('a-input'),
+        number: modelValueComponent('a-input-number'),
+        integer: modelValueComponent('a-input-number'),
     },
     formats: {
-        color: 'el-color-picker',
+        color: {
+            setup(props, { attrs }) {
+                return () => h(modelValueComponent('a-input'), {
+                    type: 'color',
+                    ...attrs,
+                });
+            }
+        },
         time: TimePickerWidget, // 20:20:39+00:00
         date: DatePickerWidget, // 2018-11-13
         'date-time': DateTimePickerWidget, // 2018-11-13T20:20:39+00:00
