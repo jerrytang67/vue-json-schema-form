@@ -162,7 +162,7 @@ export default function createForm(globalOptions = {}) {
                             layoutColumn: !inline,
                             [`layoutColumn-${layoutColumn}`]: !inline
                         },
-                        getFormRef: (form) => {
+                        setFormRef: (form) => {
                             formRef = form;
                         },
                         model: rootFormData,

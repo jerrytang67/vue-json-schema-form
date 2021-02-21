@@ -290,7 +290,7 @@ export default {
                     } : {},
 
                     // default
-                    default: () => [
+                    default: otherAttrs => [
                         // description
                         // 非mini模式显示 description
                         ...(!miniDesModel && descriptionVNode) ? [descriptionVNode] : [],
@@ -308,7 +308,8 @@ export default {
                                     ref: widgetRef,
                                     'onUpdate:modelValue': function updateModelValue(event) {
                                         widgetValue.value = event;
-                                    }
+                                    },
+                                    ...otherAttrs
                                 }
                             )
                         ] : []

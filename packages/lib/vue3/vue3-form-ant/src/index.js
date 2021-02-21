@@ -40,7 +40,7 @@ const globalOptions = {
 
                 // 返回当前的 form ref
                 const formRef = ref(null);
-                if (attrs.getFormRef) {
+                if (attrs.setFormRef) {
                     onMounted(() => {
                         // form组件实例上附加一个 validate 方法
                         formRef.value.$$validate = (callBack) => {
@@ -50,14 +50,14 @@ const globalOptions = {
                                 callBack(false, err.errorFields);
                             });
                         };
-                        attrs.getFormRef(formRef.value);
+                        attrs.setFormRef(formRef.value);
                     });
                 }
 
                 return () => {
                     const {
                         // eslint-disable-next-line no-unused-vars
-                        labelPosition, labelWidth, model, ...otherAttrs
+                        setFormRef, labelPosition, labelWidth, model, ...otherAttrs
                     } = attrs;
 
                     return h(vueUtils.resolveComponent('a-form'), {
@@ -73,17 +73,23 @@ const globalOptions = {
             inheritAttrs: false,
             setup(props, { attrs, slots }) {
                 const formItemRef = ref(null);
-
-                onMounted(() => {
-                    console.log(formItemRef.value.onFieldBlur);
-                });
                 return () => {
                     const { prop, ...originAttrs } = attrs;
                     return h(vueUtils.resolveComponent('a-form-item'), {
                         ...originAttrs,
                         ref: formItemRef,
                         name: prop
-                    }, slots);
+                    }, {
+                        ...slots,
+                        default: function proxySlotDefault() {
+                            // 解决 a-form-item 只对子元素进行劫持，并监听 blur 和 change 事件
+                            // @blur="() => {$refs.name.onFieldBlur()}"
+                            // @change="() => {$refs.name.onFieldChange()}"
+                            return slots.default.call(this, {
+                                onBlur: () => formItemRef.value.onFieldBlur()
+                            });
+                        }
+                    });
                 };
             }
         }),

@@ -25,17 +25,21 @@ const globalOptions = {
             inheritAttrs: false,
             setup(props, { attrs, slots }) {
                 const formRef = ref(null);
-                const { getFormRef, ...otherAttrs } = attrs;
-                if (getFormRef) {
+                if (attrs.setFormRef) {
                     onMounted(() => {
-                        getFormRef(formRef.value);
+                        attrs.setFormRef(formRef.value);
                     });
                 }
 
-                return () => h(vueUtils.resolveComponent('el-form'), {
-                    ref: formRef,
-                    ...otherAttrs
-                }, slots);
+                return () => {
+                    // eslint-disable-next-line no-unused-vars
+                    const { setFormRef, ...otherAttrs } = attrs;
+
+                    return h(vueUtils.resolveComponent('el-form'), {
+                        ref: formRef,
+                        ...otherAttrs
+                    }, slots);
+                };
             }
         }),
         formItem: 'el-form-item',
@@ -58,11 +62,6 @@ const globalOptions = {
 };
 
 const JsonSchemaForm = createVue3Core(globalOptions);
-
-// 存在Vue 全局变量默认注册 VueForm 组件
-// if (typeof window !== 'undefined' && window.Vue) {
-//     window.Vue.component('VueForm', src);
-// }
 
 export default JsonSchemaForm;
 
