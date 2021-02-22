@@ -75,10 +75,11 @@ const globalOptions = {
                 const formItemRef = ref(null);
                 return () => {
                     const { prop, ...originAttrs } = attrs;
+
                     return h(vueUtils.resolveComponent('a-form-item'), {
                         ...originAttrs,
                         ref: formItemRef,
-                        name: prop
+                        name: prop ? prop.split('.') : prop
                     }, {
                         ...slots,
                         default: function proxySlotDefault() {
