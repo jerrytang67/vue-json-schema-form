@@ -9,6 +9,7 @@ import { resolveComponent } from '@lljj/vjsf-utils/vue3Utils';
 export const modelValueComponent = (component, {
     model = 'value'
 } = {}) => defineComponent({
+    inheritAttrs: false,
     setup(props, { attrs, slots }) {
         return () => {
             const {

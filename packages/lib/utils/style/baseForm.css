@@ -231,11 +231,11 @@
         }
     }
 
-    .arrayListItem_content .genFormItem {
+    /*.arrayListItem_content .genFormItem {
         &:last-child {
             margin-bottom: 0;
         }
-    }
+    }*/
     &.formInline {
         .genFormItem {
             display: inline-block;

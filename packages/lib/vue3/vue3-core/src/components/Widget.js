@@ -124,7 +124,7 @@ export default {
         globalOptions: null // 全局配置
     },
     emits: ['change'],
-    inheritAttrs: false,
+    inheritAttrs: true,
     setup(props, { emit }) {
         const widgetValue = computed({
             get() {
