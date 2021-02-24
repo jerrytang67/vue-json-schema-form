@@ -1,33 +1,28 @@
 /**
- * Created by Liu.Jun on 2020/7/22 13:21.
+ * Created by Liu.Jun on 2021/2/23 10:21 下午.
  */
 
 import { h } from 'vue';
 import { resolveComponent } from '@lljj/vjsf-utils/vue3Utils';
+import { modelValueComponent } from '../../utils';
 
-export default {
-    name: 'DateTimePickerWidget',
+const baseComponent = {
+    name: 'DatePickerWidget',
     inheritAttrs: false,
-    setup(props, { attrs, slots }) {
-        const trueValue = (isRange, isNumberValue, val) => {
-            if (isRange) {
-                return (val === null) ? [] : val.map(item => (new Date(item))[isNumberValue ? 'valueOf' : 'toISOString']());
-            }
-            return (val === null) ? undefined : (new Date(val))[isNumberValue ? 'valueOf' : 'toISOString']();
-        };
-
+    setup(props, { attrs }) {
         return () => {
-            const { isNumberValue, isRange, ...otherProps } = attrs || {};
-            return h(resolveComponent('el-date-picker'), {
-                type: isRange ? 'datetimerange' : 'datetime',
-                ...otherProps,
-
-                'onUpdate:modelValue': (val) => {
-                    const trueVal = trueValue(isRange, isNumberValue, val);
-
-                    attrs['onUpdate:modelValue'].apply(attrs, [trueVal]);
-                }
-            }, slots);
+            const { isNumberValue, isRange, ...otherAttrs } = attrs;
+            return h(resolveComponent(isRange ? 'a-range-picker' : 'a-date-picker'), {
+                valueFormat: isNumberValue ? 'x' : 'YYYY-MM-DDTHH:mm:ss[Z]',
+                showTime: true,
+                ...otherAttrs
+            });
         };
     }
 };
+
+const moduleValeComponent = modelValueComponent(baseComponent, {
+    model: 'value'
+});
+
+export default moduleValeComponent;
