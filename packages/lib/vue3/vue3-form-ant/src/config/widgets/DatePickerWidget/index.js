@@ -4,7 +4,7 @@
 
 import { h } from 'vue';
 import { resolveComponent } from '@lljj/vjsf-utils/vue3Utils';
-import { modelValueComponent } from '../../utils';
+import { modelValueComponent, numberTimeComponent } from '../../utils';
 
 const baseComponent = {
     name: 'DatePickerWidget',
@@ -20,7 +20,9 @@ const baseComponent = {
     }
 };
 
-const moduleValeComponent = modelValueComponent(baseComponent, {
+const timeNumberComponent = numberTimeComponent(baseComponent);
+
+const moduleValeComponent = modelValueComponent(timeNumberComponent, {
     model: 'value'
 });
 

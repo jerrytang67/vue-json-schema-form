@@ -4,7 +4,7 @@
 
 import { h } from 'vue';
 import { resolveComponent } from '@lljj/vjsf-utils/vue3Utils';
-import { modelValueComponent } from '../../utils';
+import { modelValueComponent, numberTimeComponent } from '../../utils';
 
 const baseComponent = {
     name: 'DatePickerWidget',
@@ -13,7 +13,7 @@ const baseComponent = {
         return () => {
             const { isNumberValue, isRange, ...otherAttrs } = attrs;
             return h(resolveComponent(isRange ? 'a-range-picker' : 'a-date-picker'), {
-                valueFormat: isNumberValue ? 'x' : 'YYYY-MM-DDTHH:mm:ss[Z]',
+                valueFormat: isNumberValue ? 'x' : 'YYYY-MM-DDTHH:mm:ss.SSS[Z]',
                 showTime: true,
                 ...otherAttrs
             });
@@ -21,7 +21,9 @@ const baseComponent = {
     }
 };
 
-const moduleValeComponent = modelValueComponent(baseComponent, {
+const timeNumberComponent = numberTimeComponent(baseComponent);
+
+const moduleValeComponent = modelValueComponent(timeNumberComponent, {
     model: 'value'
 });
 
