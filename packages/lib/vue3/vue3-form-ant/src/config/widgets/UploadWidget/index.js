@@ -2,7 +2,7 @@
  * Created by Liu.Jun on 2020/11/26 10:01 下午.
  */
 
-import { h, ref, getCurrentInstance } from 'vue';
+import { h, ref } from 'vue';
 import { resolveComponent } from '@lljj/vjsf-utils/vue3Utils';
 
 // mock
@@ -16,7 +16,7 @@ export default {
             type: [String, Array]
         },
         responseFileUrl: {
-            default: res => (res ? (res.url || (res.data && res.data.url)) : ''),
+            default: () => res => (res ? (res.url || (res.data && res.data.url)) : ''),
             type: [Function]
         },
         btnText: {
@@ -29,7 +29,8 @@ export default {
             default: null
         }
     },
-    setup(props, { attrs, slots, emit }) {
+    inheritAttrs: false,
+    setup(props, { attrs, emit }) {
         // 设置默认 fileList
         const value = props.modelValue;
         const isArrayValue = Array.isArray(value);
@@ -69,63 +70,38 @@ export default {
             } else {
                 const fileItem = emitFileList[emitFileList.length - 1];
                 curValue = geUrl(fileItem);
+                fileListRef.value = curValue ? [fileItem] : [];
             }
 
             emit('update:modelValue', curValue);
         };
 
-        const globalProperties = getCurrentInstance().appContext.config.globalProperties;
-
-        return () => {
-            const data = {
-                fileList: fileListRef.value,
-                'on-exceed': () => {
-                    if (globalProperties.$message) {
-                        globalProperties.$message.warning('超出文件上传数');
-                    }
-                },
-                'on-error': () => {
-                    if (globalProperties.$message) {
-                        globalProperties.$message.error('文件上传失败');
-                    }
-                },
-                ...attrs,
-                'on-remove': (file, fileList) => {
-                    emitValue(fileList);
-                    if (attrs['on-remove']) {
-                        attrs['on-remove'](file, fileList);
-                    }
-                },
-                'on-success': (response, file, fileList) => {
-                    emitValue(fileList);
-                    // 用户注册的 onSuccess
-                    if (attrs['on-success']) {
-                        attrs['on-success'](response, file, fileList);
-                    }
+        return () => h(resolveComponent('a-upload'), {
+            ...attrs,
+            fileList: fileListRef.value,
+            'onUpdate:fileList': function updateFileList(val) {
+                fileListRef.value = val;
+            },
+            onChange(changeData) {
+                if (changeData.file.status !== 'uploading') {
+                    emitValue(changeData.fileList);
                 }
-            };
 
-            if (!isArrayValue) data.limit = 1;
-
-            const childVNode = {};
-
-            if (slots && slots.default) {
-                // nothing...
-            } else {
-                childVNode.default = () => h(
-                    resolveComponent('el-button'),
-                    {
-                        props: {
-                            type: 'primary'
-                        },
-                    },
-                    {
-                        default: () => props.btnText
-                    }
-                );
+                if (attrs.onChange) {
+                    attrs.onChange.call(this, changeData);
+                }
             }
-
-            return h(resolveComponent('el-upload'), data, childVNode);
-        };
+        }, {
+            default: () => h(
+                resolveComponent('a-button'),
+                {
+                    type: 'primary'
+                },
+                {
+                    default: () => props.btnText
+                }
+            ),
+            ...(props.slots || {}),
+        });
     }
 };

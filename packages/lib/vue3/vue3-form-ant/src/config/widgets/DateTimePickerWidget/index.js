@@ -13,7 +13,7 @@ const baseComponent = {
         return () => {
             const { isNumberValue, isRange, ...otherAttrs } = attrs;
             return h(resolveComponent(isRange ? 'a-range-picker' : 'a-date-picker'), {
-                valueFormat: isNumberValue ? 'x' : 'YYYY-MM-DDTHH:mm:ss.SSS[Z]',
+                valueFormat: isNumberValue ? 'x' : 'YYYY-MM-DDTHH:mm:ssZ',
                 showTime: true,
                 ...otherAttrs
             });

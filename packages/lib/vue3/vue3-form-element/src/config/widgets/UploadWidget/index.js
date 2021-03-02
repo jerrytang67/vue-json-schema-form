@@ -16,7 +16,7 @@ export default {
             type: [String, Array]
         },
         responseFileUrl: {
-            default: res => (res ? (res.url || (res.data && res.data.url)) : ''),
+            default: () => res => (res ? (res.url || (res.data && res.data.url)) : ''),
             type: [Function]
         },
         btnText: {
@@ -29,7 +29,7 @@ export default {
             default: null
         }
     },
-    setup(props, { attrs, slots, emit }) {
+    setup(props, { attrs, emit }) {
         // 设置默认 fileList
         const value = props.modelValue;
         const isArrayValue = Array.isArray(value);
@@ -107,23 +107,18 @@ export default {
 
             if (!isArrayValue) data.limit = 1;
 
-            const childVNode = {};
-
-            if (slots && slots.default) {
-                // nothing...
-            } else {
-                childVNode.default = () => h(
+            const childVNode = {
+                default: () => h(
                     resolveComponent('el-button'),
                     {
-                        props: {
-                            type: 'primary'
-                        },
+                        type: 'primary'
                     },
                     {
                         default: () => props.btnText
                     }
-                );
-            }
+                ),
+                ...(props.slots || {}),
+            };
 
             return h(resolveComponent('el-upload'), data, childVNode);
         };
