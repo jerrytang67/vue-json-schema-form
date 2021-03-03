@@ -239,9 +239,8 @@ export default {
 
                                     // 存在校验不通过字段
                                     if (errors.length > 0) {
-                                        if (callback) {
-                                            return callback(errors[0].message);
-                                        }
+                                        if (callback) return callback(errors[0].message);
+                                        return Promise.reject(errors[0].message);
                                     }
 
                                     // customRule 如果存在自定义校验
@@ -255,7 +254,9 @@ export default {
                                         });
                                     }
 
-                                    return callback();
+                                    // 校验成功
+                                    if (callback) return callback();
+                                    return Promise.resolve();
                                 },
                                 trigger: 'blur'
                             }

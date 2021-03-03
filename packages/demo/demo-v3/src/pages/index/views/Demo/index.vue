@@ -200,6 +200,7 @@ import schemaTypes from 'demo-common/schemaTypes';
 
 const VueElementForm = defineAsyncComponent(() => import('@lljj/vue3-form-element/src/index'));
 
+let installedAntdv = false;
 const VueAntForm = defineAsyncComponent(async () => {
     // eslint-disable-next-line no-unused-vars
     const [antdv, antForm] = await Promise.all([
@@ -211,8 +212,11 @@ const VueAntForm = defineAsyncComponent(async () => {
         name: 'antFormWrap',
         setup(props, { attrs, slots }) {
             // hack 动态install antDv，因为我不知其它地方如何获取 vue app
-            const instance = getCurrentInstance();
-            instance.appContext.app.use(antdv.default);
+            if (!installedAntdv) {
+                const instance = getCurrentInstance();
+                instance.appContext.app.use(antdv.default);
+                installedAntdv = true;
+            }
 
             return () => h(antForm.default, {
                 ...attrs

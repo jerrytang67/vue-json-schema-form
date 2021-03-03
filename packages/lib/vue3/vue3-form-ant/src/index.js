@@ -74,11 +74,19 @@ const globalOptions = {
             setup(props, { attrs, slots }) {
                 const formItemRef = ref(null);
                 return () => {
-                    const { prop, ...originAttrs } = attrs;
+                    const { prop, rules, ...originAttrs } = attrs;
 
                     return h(vueUtils.resolveComponent('a-form-item'), {
                         ...originAttrs,
                         ref: formItemRef,
+
+                        // 去掉callback 使用promise 模式
+                        rules: (rules || []).map(validateRule => ({
+                            ...validateRule,
+                            validator(rule, value) {
+                                return validateRule.validator.apply(this, [rule, value]);
+                            }
+                        })),
                         name: prop ? prop.split('.') : prop
                     }, {
                         ...slots,

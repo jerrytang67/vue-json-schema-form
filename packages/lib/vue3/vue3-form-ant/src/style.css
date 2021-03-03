@@ -9,6 +9,9 @@
     }
     .ant-form-item {
         margin-bottom: 22px;
+        &.ant-form-item-with-help {
+            margin-bottom: 2px;
+        }
     }
     .ant-form-explain {
         padding-top: 2px;
