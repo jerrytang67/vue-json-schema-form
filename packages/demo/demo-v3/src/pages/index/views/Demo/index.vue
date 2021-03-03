@@ -179,6 +179,7 @@
                             :custom-formats="customFormats"
                             :form-footer="trueFormFooter"
                             :form-props="trueFormProps"
+                            @form-mounted="handleFormMounted"
                             @change="handleDataChange"
                             @cancel="handleCancel"
                             @submit="handleSubmit"
@@ -396,6 +397,9 @@ export default {
             Object.assign(this, defaultState, Object.assign(schemaTypes[this.curType], queryParamsObj, {
                 formProps
             }));
+        },
+        handleFormMounted(formRef) {
+            console.log('Ui form component:', formRef);
         },
         handleDataChange() {
             console.log('Data change');

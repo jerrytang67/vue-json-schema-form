@@ -93,6 +93,9 @@ export default function createForm(globalOptions = {}) {
                 }
             },
         },
+        mounted() {
+            this.$emit('on-form-mounted', this.$refs.genEditForm);
+        },
         render(h) {
             const self = this;
             // default scoped slot

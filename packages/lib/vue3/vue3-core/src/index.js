@@ -32,7 +32,7 @@ export default function createForm(globalOptions = {}) {
     const Form = {
         name: 'VueElementForm',
         props: vueProps,
-        emits: ['update:modelValue', 'change', 'cancel', 'submit', 'validation-failed'],
+        emits: ['update:modelValue', 'change', 'cancel', 'submit', 'validation-failed', 'form-mounted'],
         setup(props, { slots, emit }) {
             if (!Form.installed && globalOptions.WIDGET_MAP.widgetComponents) {
                 // global components
@@ -164,6 +164,7 @@ export default function createForm(globalOptions = {}) {
                         },
                         setFormRef: (form) => {
                             formRef = form;
+                            emit('form-mounted', form);
                         },
                         model: rootFormData,
                         ...schemaProps.formProps
