@@ -7,6 +7,9 @@
             font-size: 14px;
         }
     }
+    .ant-form-item {
+        margin-bottom: 22px;
+    }
     .ant-form-explain {
         padding-top: 2px;
         display: -webkit-box!important;

@@ -125,7 +125,7 @@
     }
 
     /* type array */
-    .arrayField {
+    .arrayField:not(.genFormItem){
         margin-bottom: 22px;
         .arrayField {
             margin-bottom: 10px;

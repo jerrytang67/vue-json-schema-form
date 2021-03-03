@@ -264,7 +264,7 @@ export default {
                 },
                 {
                     // 错误只能显示一行，多余...
-                    error: slotProps => (slotProps.error ? h('p', {
+                    error: slotProps => (slotProps.error ? h('div', {
                         class: {
                             formItemErrorBox: true
                         },

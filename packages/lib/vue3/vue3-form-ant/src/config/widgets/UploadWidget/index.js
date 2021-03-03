@@ -32,22 +32,25 @@ export default {
     inheritAttrs: false,
     setup(props, { attrs, emit }) {
         // 设置默认 fileList
-        const value = props.modelValue;
-        const isArrayValue = Array.isArray(value);
+        const curModelValue = props.modelValue;
+        const isArrayValue = Array.isArray(curModelValue);
 
-        let defaultFileList = attrs.fileList || [];
-
-        if (isArrayValue) {
-            defaultFileList = value.map((item, index) => ({
+        let defaultFileList = attrs.fileList;
+        // 优先使用 fileList 参数，否则使用 value 计算
+        if (!defaultFileList || defaultFileList.length === 0) {
+            defaultFileList = isArrayValue ? curModelValue.map((item, index) => ({
+                uid: String(index),
+                status: 'done',
                 name: `已上传文件（${index + 1}）`,
                 url: item
-            }));
-        } else if (value) {
-            defaultFileList.push({
+            })) : [{
+                uid: '1',
+                status: 'done',
                 name: '已上传文件',
-                url: value
-            });
+                url: curModelValue
+            }];
         }
+
 
         // fileList
         const fileListRef = ref(defaultFileList);

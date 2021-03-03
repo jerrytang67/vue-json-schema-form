@@ -263,7 +263,7 @@ export default {
                 },
                 scopedSlots: {
                     // 错误只能显示一行，多余...
-                    error: props => (props.error ? h('p', {
+                    error: props => (props.error ? h('div', {
                         class: {
                             formItemErrorBox: true
                         },
