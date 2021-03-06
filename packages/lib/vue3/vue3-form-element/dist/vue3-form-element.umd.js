@@ -11347,7 +11347,8 @@
             globalOptions: globalOptions,
             // 全局配置，差异化ui框架
             formProps: _objectSpread2({
-              labelSuffix: '：'
+              labelSuffix: '：',
+              labelPosition: 'top'
             }, otherFormProps)
           };
           return Vue.h(resolveComponent(globalOptions.COMPONENT_MAP.form), _objectSpread2({

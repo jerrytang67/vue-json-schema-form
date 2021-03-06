@@ -634,6 +634,7 @@ formProps = {
     inline: false, // 行内表单模式
     inlineFooter: false, // 如果想要保存按钮和表单元素一行显示，需要配置 true
     labelSuffix: '：', // label后缀
+    labelPosition: 'top', // 表单域标签的位置
 }
 ```
 
@@ -644,8 +645,7 @@ formProps = {
     layoutColumn: 2, // 1 2 3 ，支持 1 2 3 列布局，如果使用inline表单这里配置无效
 
     // 如下为form组件参数
-    // 如elementUi el-form labelPosition
-    labelPosition: 'top', // 表单域标签的位置
+    // 如elementUi el-form labelWidth
     labelWidth: 'auto', // 表单域标签的宽度，例如 '50px'
 }
 ```
@@ -760,10 +760,6 @@ vue3的版本中为 `change`，去掉 `on` 前缀
 ::: warning
 vue3的版本中为 `form-mounted`，去掉 `on` 前缀
 :::
-
-表单的值发生改变
-> 引用类型，只有重新对对象赋值，否则newVal 等于 oldVal 参见 [vue watch](https://cn.vuejs.org/v2/api/#vm-watch)
-
 
 ## 方法 Methods
 -- 无

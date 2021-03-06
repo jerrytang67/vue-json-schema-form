@@ -6,9 +6,11 @@
 
 import { h } from 'vue';
 import widgetComponents from './index';
-import { modelValueComponent } from '../utils';
 
 const {
+    InputWidget,
+    InputNumberWidget,
+    SwitchWidget,
     CheckboxesWidget,
     RadioWidget,
     SelectWidget,
@@ -19,17 +21,15 @@ const {
 
 export default {
     types: {
-        boolean: modelValueComponent('a-switch', {
-            model: 'checked'
-        }),
-        string: modelValueComponent('a-input'),
-        number: modelValueComponent('a-input-number'),
-        integer: modelValueComponent('a-input-number'),
+        boolean: SwitchWidget,
+        string: InputWidget,
+        number: InputNumberWidget,
+        integer: InputNumberWidget,
     },
     formats: {
         color: {
             setup(props, { attrs }) {
-                return () => h(modelValueComponent('a-input'), {
+                return () => h(InputWidget, {
                     type: 'color',
                     ...attrs,
                 });

@@ -20,9 +20,13 @@ const widgetComponents = {
     DatePickerWidget,
     DateTimePickerWidget,
     UploadWidget,
+    InputWidget: modelValueComponent('a-input'),
+    InputNumberWidget: modelValueComponent('a-input-number'),
     AutoCompleteWidget: modelValueComponent('a-auto-complete'),
     SliderWidget: modelValueComponent('a-slider'),
-    SwitchWidget: modelValueComponent('a-switch'),
+    SwitchWidget: modelValueComponent('a-switch', {
+        model: 'checked'
+    }),
 };
 
 export default widgetComponents;

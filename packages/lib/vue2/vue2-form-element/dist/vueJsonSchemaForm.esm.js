@@ -11634,6 +11634,7 @@ function createForm() {
         globalOptions: globalOptions,
         // 全局配置，差异化ui框架
         formProps: _objectSpread2({
+          labelPosition: 'top',
           labelSuffix: '：'
         }, formProps)
       };

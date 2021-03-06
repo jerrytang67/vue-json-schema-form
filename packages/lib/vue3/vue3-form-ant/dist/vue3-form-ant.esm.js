@@ -11308,7 +11308,8 @@ function createForm() {
           globalOptions: globalOptions,
           // 全局配置，差异化ui框架
           formProps: _objectSpread2({
-            labelSuffix: '：'
+            labelSuffix: '：',
+            labelPosition: 'top'
           }, otherFormProps)
         };
         return h(resolveComponent(globalOptions.COMPONENT_MAP.form), _objectSpread2({
@@ -11687,12 +11688,19 @@ var widgetComponents = {
   DatePickerWidget: moduleValeComponent$3,
   DateTimePickerWidget: moduleValeComponent$4,
   UploadWidget: UploadWidget,
+  InputWidget: modelValueComponent('a-input'),
+  InputNumberWidget: modelValueComponent('a-input-number'),
   AutoCompleteWidget: modelValueComponent('a-auto-complete'),
   SliderWidget: modelValueComponent('a-slider'),
-  SwitchWidget: modelValueComponent('a-switch')
+  SwitchWidget: modelValueComponent('a-switch', {
+    model: 'checked'
+  })
 };
 
-var CheckboxesWidget = widgetComponents.CheckboxesWidget,
+var InputWidget = widgetComponents.InputWidget,
+    InputNumberWidget = widgetComponents.InputNumberWidget,
+    SwitchWidget = widgetComponents.SwitchWidget,
+    CheckboxesWidget = widgetComponents.CheckboxesWidget,
     RadioWidget = widgetComponents.RadioWidget,
     SelectWidget = widgetComponents.SelectWidget,
     TimePickerWidget = widgetComponents.TimePickerWidget,
@@ -11700,19 +11708,17 @@ var CheckboxesWidget = widgetComponents.CheckboxesWidget,
     DateTimePickerWidget = widgetComponents.DateTimePickerWidget;
 var WIDGET_MAP = {
   types: {
-    boolean: modelValueComponent('a-switch', {
-      model: 'checked'
-    }),
-    string: modelValueComponent('a-input'),
-    number: modelValueComponent('a-input-number'),
-    integer: modelValueComponent('a-input-number')
+    boolean: SwitchWidget,
+    string: InputWidget,
+    number: InputNumberWidget,
+    integer: InputNumberWidget
   },
   formats: {
     color: {
       setup: function setup(props, _ref) {
         var attrs = _ref.attrs;
         return function () {
-          return h(modelValueComponent('a-input'), _objectSpread2({
+          return h(InputWidget, _objectSpread2({
             type: 'color'
           }, attrs));
         };

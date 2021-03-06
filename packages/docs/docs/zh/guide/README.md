@@ -14,6 +14,7 @@
 **各版本api和使用形式99%一致，仅有如下差异：**
 ::: warning 各版本差异
 * vue3 emit事件都会去掉on前缀，详细看这里 [事件 Emit Event](/zh/guide/basic-config.html#事件-emit-event)
+* vue3 antDv `v-model` 不使用 `modelValue` props，这里需要做个转换，[详细参见](/zh/guide/#vue3-ant-v-model-%E7%89%B9%E6%AE%8A%E5%A4%84%E7%90%86)
 :::
 
 ### @lljj/vue-json-schema-form
@@ -21,25 +22,46 @@
 * package name: `@lljj/vue-json-schema-form`
 * umd cdn地址：[@lljj/vue-json-schema-form cdn](https://cdn.jsdelivr.net/npm/@lljj/vue-json-schema-form/dist/vueJsonSchemaForm.umd.min.js)
 * umd script 标签形式引入暴露全局变量 `window.vueJsonSchemaForm`
+* [playground](https://form.lljj.me/#/demo?type=Simple)
 
 ### @lljj/vue2-form-iview3
 * 适配ui库：`Vue2` `iview3`
 * package name: `@lljj/vue2-form-iview3`
 * umd cdn地址：[@lljj/vue2-form-iview3 cdn](https://cdn.jsdelivr.net/npm/@lljj/vue2-form-iview3/dist/vue2-form-iview3.umd.min.js)
 * umd script 标签形式引入暴露全局变量 `window.vue2FormIview3`
+* [playground](https://form.lljj.me/#/demo?type=Simple&ui=VueIview3Form)
 
 ### @lljj/vue3-form-element
 * 适配ui库：`Vue3` `ElementPlus`
 * package name : `@lljj/vue3-form-element`
 * umd cdn地址：[@lljj/vue3-form-element cdn](https://cdn.jsdelivr.net/npm/@lljj/vue3-form-element/dist/vue3-form-element.umd.min.js)
 * umd script 标签形式引入暴露全局变量 `window.vue3FormElement`
+* [playground](https://form.lljj.me/v3/#/demo?type=Simple)
+
 
 ### @lljj/vue3-form-ant
 * 适配ui库：`Vue3` `antdv`
 * package name : `@lljj/vue3-form-ant`
 * umd cdn地址：[@lljj/vue3-form-ant cdn](https://cdn.jsdelivr.net/npm/@lljj/vue3-form-ant/dist/vue3-form-ant.umd.min.js)
 * umd script 标签形式引入暴露全局变量 `window.vue3FormAnt`
-* >todo，还未发布
+* [playground](https://form.lljj.me/v3/#/demo?type=Simple&ui=VueAntForm)
+
+#### vue3 ant v-model 特殊处理
+例如 `a-input` 组件，ant vue3需要使用 `v-model:value`，但在整个框架内部 `v-model` 都是使用 `modelValue`，所以这里就需要对不一致的props通过中间组件组做转换。
+
+你可以自行转换也可以使用内置方法 `modelValueComponent` 转换，如下：
+```js
+import { modelValueComponent } from '@lljj/vue3-form-ant';
+
+// 返回一个接受 modelValue 和 update:modelValue v-model的组件
+const MyFixInputComponent = modelValueComponent('a-input', {
+    model: 'value' // 这里要根据ant组件 model的参数传递
+});
+```
+
+**这样使用起来还是有些麻烦，目前已经对常用的Widget组件做了内置，参见 [ant vue 附加全局Widget组件](/zh/guide/components.html#vue3-ant-特有的全局组件)**
+
+----------------------------
 
 ::: tip
 后续的文档都以 `@lljj/vue-json-schema-form` 为例

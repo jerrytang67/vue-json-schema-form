@@ -147,6 +147,7 @@ export default function createForm(globalOptions = {}) {
                     globalOptions, // 全局配置，差异化ui框架
                     formProps: {
                         labelSuffix: '：',
+                        labelPosition: 'top',
                         ...otherFormProps,
                     }
                 };
