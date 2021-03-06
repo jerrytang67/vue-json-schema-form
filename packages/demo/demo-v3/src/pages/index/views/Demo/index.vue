@@ -199,14 +199,14 @@ import EditorHeader from 'demo-common/components/EditorHeader.vue';
 import CodeEditor from 'demo-common/components/CodeEditor';
 import schemaTypes from 'demo-common/schemaTypes';
 
-const VueElementForm = defineAsyncComponent(() => import('@lljj/vue3-form-element/src/index'));
+const VueElementForm = defineAsyncComponent(() => import('@lljj/vue3-form-element'));
 
 let installedAntdv = false;
 const VueAntForm = defineAsyncComponent(async () => {
     // eslint-disable-next-line no-unused-vars
     const [antdv, antForm] = await Promise.all([
         import('demo-common/components/Antdv/index.js'),
-        import('@lljj/vue3-form-ant/src/index')
+        import('@lljj/vue3-form-ant')
     ]);
 
     return {
