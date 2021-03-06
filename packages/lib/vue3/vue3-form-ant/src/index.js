@@ -14,6 +14,8 @@ import * as schemaValidate from '@lljj/vjsf-utils/schema/validate';
 import getDefaultFormState from '@lljj/vjsf-utils/schema/getDefaultFormState';
 import WIDGET_MAP from './config/widgets/WIDGET_MAP.js';
 
+import { modelValueComponent } from './config/utils';
+
 import './style.css';
 
 const globalOptions = {
@@ -143,5 +145,6 @@ export {
     vueUtils,
     formUtils,
     schemaValidate,
-    i18n
+    i18n,
+    modelValueComponent
 };

@@ -10,6 +10,8 @@ import DateTimePickerWidget from './DateTimePickerWidget';
 import TimePickerWidget from './TimePickerWidget';
 import UploadWidget from './UploadWidget';
 
+import { modelValueComponent } from '../utils';
+
 const widgetComponents = {
     CheckboxesWidget,
     RadioWidget,
@@ -17,7 +19,10 @@ const widgetComponents = {
     TimePickerWidget,
     DatePickerWidget,
     DateTimePickerWidget,
-    UploadWidget
+    UploadWidget,
+    AutoCompleteWidget: modelValueComponent('a-auto-complete'),
+    SliderWidget: modelValueComponent('a-slider'),
+    SwitchWidget: modelValueComponent('a-switch'),
 };
 
 export default widgetComponents;
