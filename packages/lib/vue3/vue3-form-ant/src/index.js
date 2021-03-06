@@ -93,11 +93,17 @@ const globalOptions = {
                     }, {
                         ...slots,
                         default: function proxySlotDefault() {
-                            // 解决 a-form-item 只对子元素进行劫持，并监听 blur 和 change 事件
+                            // 解决 a-form-item 只对第一个子元素进行劫持，并监听 blur 和 change 事件，如果存在第一个元素description无法校验
                             // @blur="() => {$refs.name.onFieldBlur()}"
                             // @change="() => {$refs.name.onFieldChange()}"
                             return slots.default.call(this, {
-                                onBlur: () => formItemRef.value.onFieldBlur()
+                                onBlur: (event) => {
+                                    const prevDescription = event.target.previousElementSibling;
+                                    // 存在 description，需要 hack 事件
+                                    if (prevDescription && prevDescription.classList.contains('genFromWidget_des')) {
+                                        formItemRef.value.onFieldBlur();
+                                    }
+                                }
                             });
                         }
                     });

@@ -16,7 +16,9 @@ const baseComponent = {
     },
     setup(props, { attrs }) {
         return () => h(resolveComponent('a-select'), {
-            mode: attrs.multiple ? 'multiple' : 'default',
+            ...(attrs.multiple ? {
+                mode: 'multiple'
+            } : {}),
             ...attrs,
         }, {
             default() {
