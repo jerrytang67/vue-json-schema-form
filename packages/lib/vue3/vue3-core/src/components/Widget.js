@@ -6,6 +6,8 @@ import {
     computed, h, ref, watch
 } from 'vue';
 
+import { IconQuestion } from '@lljj/vjsf-utils/icons';
+
 import { validateFormDataAndTransformMsg } from '@lljj/vjsf-utils/schema/validate';
 import {
     isRootNodePath, path2prop, getPathVal, setPathVal, resolveComponent
@@ -181,7 +183,7 @@ export default {
                 },
             ) : null;
 
-            const { COMPONENT_MAP, ICONS_MAP } = props.globalOptions;
+            const { COMPONENT_MAP } = props.globalOptions;
             const miniDescriptionVNode = (miniDesModel && descriptionVNode) ? h(resolveComponent(COMPONENT_MAP.popover), {
                 style: {
                     margin: '0 2px',
@@ -192,9 +194,7 @@ export default {
                 trigger: 'hover'
             }, {
                 default: () => descriptionVNode,
-                reference: () => h('i', {
-                    class: ICONS_MAP.question
-                })
+                reference: () => h(IconQuestion)
             }) : null;
 
             // form-item style

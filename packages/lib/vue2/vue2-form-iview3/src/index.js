@@ -61,13 +61,6 @@ const globalOptions = Object.freeze({
             }
         },
     }),
-    ICONS_MAP: Object.freeze({
-        question: 'ivu-icon ivu-icon-md-help-circle',
-        moveUp: 'ivu-icon ivu-icon-md-arrow-round-up',
-        moveDown: 'ivu-icon ivu-icon-md-arrow-round-down',
-        close: 'ivu-icon ivu-icon-md-close',
-        plus: 'ivu-icon ivu-icon-md-add'
-    }),
     HELPERS: {
         // 是否mini显示 description
         isMiniDes(formProps) {

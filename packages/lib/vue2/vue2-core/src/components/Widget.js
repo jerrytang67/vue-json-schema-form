@@ -7,6 +7,7 @@ import {
 } from '@lljj/vjsf-utils/vueUtils';
 
 import { validateFormDataAndTransformMsg } from '@lljj/vjsf-utils/schema/validate';
+import { IconQuestion } from '@lljj/vjsf-utils/icons';
 
 export default {
     name: 'Widget',
@@ -181,7 +182,7 @@ export default {
             },
         ) : null;
 
-        const { COMPONENT_MAP, ICONS_MAP } = self.globalOptions;
+        const { COMPONENT_MAP } = self.globalOptions;
 
         const miniDescriptionVNode = (miniDesModel && descriptionVNode) ? h(COMPONENT_MAP.popover, {
             style: {
@@ -195,9 +196,8 @@ export default {
             }
         }, [
             descriptionVNode,
-            h('i', {
-                slot: 'reference',
-                class: ICONS_MAP.question
+            h(IconQuestion, {
+                slot: 'reference'
             })
         ]) : null;
 

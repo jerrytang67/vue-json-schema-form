@@ -46,13 +46,6 @@ const globalOptions = {
         button: 'el-button',
         popover: 'el-popover'
     },
-    ICONS_MAP: {
-        question: 'el-icon-question',
-        moveUp: 'el-icon-caret-top',
-        moveDown: 'el-icon-caret-bottom',
-        close: 'el-icon-close',
-        plus: 'el-icon-plus'
-    },
     HELPERS: {
         // 是否mini显示 description
         isMiniDes(formProps) {
