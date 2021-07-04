@@ -1901,6 +1901,22 @@
     core-js "^2.6.0"
     regenerator-runtime "^0.11.1"
 
+"@lljj/vue2-form-iview3@1.2.1":
+  version "1.2.1"
+  resolved "https://registry.nlark.com/@lljj/vue2-form-iview3/download/@lljj/vue2-form-iview3-1.2.1.tgz#f362b9f12266c2baff90d3ad25644e96ccb5c7a0"
+  integrity sha1-82K58SJmwrr/kNOtJWROlsy1x6A=
+  dependencies:
+    "@lljj/vjsf-utils" "1.2.1"
+    "@lljj/vue2-form-core" "1.2.1"
+
+"@lljj/vue3-form-ant@1.2.1":
+  version "1.2.1"
+  resolved "https://registry.nlark.com/@lljj/vue3-form-ant/download/@lljj/vue3-form-ant-1.2.1.tgz#0548b937ad81d4b09c1c5d1dbaf5d7504692d5f1"
+  integrity sha1-BUi5N62B1LCcHF0duvXXUEaS1fE=
+  dependencies:
+    "@lljj/vjsf-utils" "1.2.1"
+    "@lljj/vue3-form-core" "1.2.1"
+
 "@marionebl/sander@^0.6.0":
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/@marionebl/sander/-/sander-0.6.1.tgz#1958965874f24bc51be48875feb50d642fc41f7b"

@@ -9508,7 +9508,7 @@
   //
   var script = {
     name: 'FieldGroupWrap',
-    inject: ['genFormProvide'],
+    inject: ['$genFormProvide'],
     props: {
       // 当前节点路径
       curNodePath: {
@@ -9533,6 +9533,13 @@
       }
     },
     computed: {
+      genFormProvide: function genFormProvide() {
+        // vue3/vue2 响应式provide
+        // 实现方式差异如下：
+        // provide vue3 computed 直接为响应式数据
+        // provide vue2 需要计算属性访问原始值
+        return typeof this.$genFormProvide === 'function' ? this.$genFormProvide() : this.$genFormProvide.value;
+      },
       trueTitle: function trueTitle() {
         var title = this.title;
 
@@ -9540,7 +9547,8 @@
           return title;
         }
 
-        var genFormProvide = this.genFormProvide.value || this.genFormProvide;
+        debugger;
+        var genFormProvide = this.genFormProvide;
         var backTitle = genFormProvide.fallbackLabel && this.curNodePath.split('.').pop();
         if (backTitle !== "".concat(Number(backTitle))) return backTitle;
         return '';
@@ -9688,9 +9696,9 @@
    */
   // 递归参数，统一props
   var vueProps$1 = {
-    formProps: {
-      type: null
-    },
+    // formProps: {
+    //     type: null
+    // },
     // 全局的配置，用于 初始化差异，适配不同的ui框架
     globalOptions: {
       type: null
@@ -9717,17 +9725,15 @@
       }
     },
     // 自定义校验
-    customRule: {
-      type: Function,
-      default: null
-    },
+    // customRule: {
+    //     type: Function,
+    //     default: null
+    // },
     // 自定义校验规则
-    customFormats: {
-      type: Object,
-      default: function _default() {
-        return {};
-      }
-    },
+    // customFormats: {
+    //     type: Object,
+    //     default: () => ({})
+    // },
     // 根节点 Schema
     rootSchema: {
       type: Object,
@@ -10014,7 +10020,7 @@
 
   var Widget = {
     name: 'Widget',
-    inject: ['genFormProvide'],
+    inject: ['$genFormProvide'],
     props: {
       // 是否同步formData的值，默认表单元素都需要
       // oneOf anyOf 中的select属于formData之外的数据
@@ -10044,17 +10050,6 @@
         default: function _default() {
           return {};
         }
-      },
-      customFormats: {
-        type: Object,
-        default: function _default() {
-          return {};
-        }
-      },
-      // 自定义校验
-      customRule: {
-        type: Function,
-        default: null
       },
       widget: {
         type: [String, Function, Object],
@@ -10153,12 +10148,14 @@
           return {};
         }
       },
-      formProps: null,
       getWidget: null,
       globalOptions: null // 全局配置
 
     },
     computed: {
+      genFormProvide: function genFormProvide() {
+        return this.$genFormProvide();
+      },
       value: {
         get: function get() {
           if (this.isFormData) {
@@ -10192,19 +10189,31 @@
     },
     render: function render(h) {
       var self = this;
-      var curNodePath = this.$props.curNodePath; // 判断是否为根节点
+      var _this$$props = this.$props,
+          curNodePath = _this$$props.curNodePath,
+          description = _this$$props.description,
+          width = _this$$props.width,
+          globalOptions = _this$$props.globalOptions,
+          widget = _this$$props.widget,
+          labelWidth = _this$$props.labelWidth,
+          rootFormData = _this$$props.rootFormData,
+          required = _this$$props.required;
+      var _this$genFormProvide = this.genFormProvide,
+          formProps = _this$genFormProvide.formProps,
+          customFormats = _this$genFormProvide.customFormats,
+          customRule = _this$genFormProvide.customRule; // 判断是否为根节点
 
       var isRootNode = isRootNodePath(curNodePath);
-      var miniDesModel = self.globalOptions.HELPERS.isMiniDes(self.formProps);
-      var descriptionVNode = self.description ? h('div', {
+      var miniDesModel = globalOptions.HELPERS.isMiniDes(formProps);
+      var descriptionVNode = description ? h('div', {
         domProps: {
-          innerHTML: self.description
+          innerHTML: description
         },
         class: {
           genFromWidget_des: true
         }
       }) : null;
-      var COMPONENT_MAP = self.globalOptions.COMPONENT_MAP;
+      var COMPONENT_MAP = globalOptions.COMPONENT_MAP;
       var miniDescriptionVNode = miniDesModel && descriptionVNode ? h(COMPONENT_MAP.popover, {
         style: {
           margin: '0 2px',
@@ -10219,47 +10228,45 @@
         slot: 'reference'
       })]) : null; // form-item style
 
-      var formItemStyle = _objectSpread2(_objectSpread2({}, self.fieldStyle), self.width ? {
-        width: self.width,
-        flexBasis: self.width,
+      var formItemStyle = _objectSpread2(_objectSpread2({}, this.fieldStyle), width ? {
+        width: width,
+        flexBasis: width,
         paddingRight: '10px'
       } : {}); // 运行配置回退到 属性名
 
 
-      var label = fallbackLabel(self.label, self.widget && this.genFormProvide.fallbackLabel, curNodePath);
+      var label = fallbackLabel(this.label, widget && this.genFormProvide.fallbackLabel, curNodePath);
       return h(COMPONENT_MAP.formItem, {
-        class: _objectSpread2(_objectSpread2({}, self.fieldClass), {}, {
+        class: _objectSpread2(_objectSpread2({}, this.fieldClass), {}, {
           genFormItem: true
         }),
         style: formItemStyle,
-        attrs: self.fieldAttrs,
-        props: _objectSpread2(_objectSpread2({}, self.labelWidth ? {
-          labelWidth: self.labelWidth
+        attrs: this.fieldAttrs,
+        props: _objectSpread2(_objectSpread2({}, labelWidth ? {
+          labelWidth: labelWidth
         } : {}), this.isFormData ? {
           // 这里对根节点打特殊标志，绕过elementUi无prop属性不校验
           prop: isRootNode ? '__$$root' : path2prop(curNodePath),
           rules: [{
             validator: function validator(rule, value, callback) {
-              if (isRootNode) value = self.rootFormData; // 校验是通过对schema逐级展开校验 这里只捕获根节点错误
+              if (isRootNode) value = rootFormData; // 校验是通过对schema逐级展开校验 这里只捕获根节点错误
 
               var errors = validateFormDataAndTransformMsg({
                 formData: value,
                 schema: self.$props.schema,
                 uiSchema: self.$props.uiSchema,
-                customFormats: self.$props.customFormats,
+                customFormats: customFormats,
                 errorSchema: self.errorSchema,
-                required: self.required,
+                required: required,
                 propPath: path2prop(curNodePath)
               });
               if (errors.length > 0) return callback(errors[0].message); // customRule 如果存在自定义校验
 
-              var curCustomRule = self.$props.customRule;
-
-              if (curCustomRule && typeof curCustomRule === 'function') {
-                return curCustomRule({
+              if (customRule && typeof customRule === 'function') {
+                return customRule({
                   field: curNodePath,
                   value: value,
-                  rootFormData: self.rootFormData,
+                  rootFormData: rootFormData,
                   callback: callback
                 });
               }
@@ -10286,12 +10293,12 @@
         slot: 'label',
         class: {
           genFormLabel: true,
-          genFormItemRequired: self.required
+          genFormItemRequired: required
         }
-      }, ["".concat(label), miniDescriptionVNode, "".concat(self.formProps && self.formProps.labelSuffix || '')]) : null, // description
+      }, ["".concat(label), miniDescriptionVNode, "".concat(formProps && formProps.labelSuffix || '')]) : null, // description
       // 非mini模式显示 description
       !miniDesModel ? descriptionVNode : null, h( // 关键输入组件
-      self.widget, {
+      widget, {
         style: self.widgetStyle,
         class: self.widgetClass,
         attrs: _objectSpread2(_objectSpread2(_objectSpread2({}, self.widgetAttrs), self.uiProps), {}, {
@@ -11595,8 +11602,13 @@
       name: 'VueForm',
       props: vueProps,
       provide: function provide() {
+        var _this = this;
+
         return {
-          genFormProvide: this.genFormProvide
+          // 处理为响应式
+          $genFormProvide: function $genFormProvide() {
+            return _this.genFormProvide;
+          }
         };
       },
       data: function data() {
@@ -11610,7 +11622,13 @@
       computed: {
         genFormProvide: function genFormProvide() {
           return {
-            fallbackLabel: this.fallbackLabel
+            fallbackLabel: this.fallbackLabel,
+            customFormats: this.customFormats,
+            customRule: this.customRule,
+            formProps: _objectSpread2({
+              labelPosition: 'top',
+              labelSuffix: '：'
+            }, this.formProps)
           };
         },
         footerParams: function footerParams() {
@@ -11663,19 +11681,21 @@
       render: function render(h) {
         var _class;
 
-        var self = this; // default scoped slot
+        var self = this;
+        var footerParams = self.footerParams,
+            formData = self.formData; // default scoped slot
 
-        var defaultSlot = this.$scopedSlots.default ? this.$scopedSlots.default({
-          formData: self.formData,
+        var defaultSlot = this.$scopedSlots.default ? self.$scopedSlots.default({
+          formData: formData,
           formRefFn: function formRefFn() {
             return self.$refs.genEditForm;
           }
-        }) : this.footerParams.show ? h(FormFooter, {
+        }) : footerParams.show ? h(FormFooter, {
           props: {
             globalOptions: globalOptions,
-            okBtn: self.footerParams.okBtn,
-            cancelBtn: self.footerParams.cancelBtn,
-            formItemAttrs: self.footerParams.formItemAttrs
+            okBtn: footerParams.okBtn,
+            cancelBtn: footerParams.cancelBtn,
+            formItemAttrs: footerParams.formItemAttrs
           },
           on: {
             onCancel: function onCancel() {
@@ -11684,7 +11704,7 @@
             onSubmit: function onSubmit() {
               self.$refs.genEditForm.validate(function (isValid, resData) {
                 if (isValid) {
-                  return self.$emit('on-submit', self.formData);
+                  return self.$emit('on-submit', formData);
                 }
 
                 console.warn(resData);
@@ -11694,40 +11714,35 @@
           }
         }) : undefined;
 
-        var _self$$props$formProp = self.$props.formProps,
-            _self$$props$formProp2 = _self$$props$formProp.layoutColumn,
-            layoutColumn = _self$$props$formProp2 === void 0 ? 1 : _self$$props$formProp2,
-            inlineFooter = _self$$props$formProp.inlineFooter,
-            inline = _self$$props$formProp.inline,
-            formProps = _objectWithoutProperties(_self$$props$formProp, ["layoutColumn", "inlineFooter", "inline"]);
+        var _self$genFormProvide$ = self.genFormProvide.formProps,
+            _self$genFormProvide$2 = _self$genFormProvide$.layoutColumn,
+            layoutColumn = _self$genFormProvide$2 === void 0 ? 1 : _self$genFormProvide$2,
+            inlineFooter = _self$genFormProvide$.inlineFooter,
+            inline = _self$genFormProvide$.inline,
+            formProps = _objectWithoutProperties(_self$genFormProvide$, ["layoutColumn", "inlineFooter", "inline"]);
 
         var props = {
-          schema: this.schema,
-          uiSchema: this.uiSchema,
-          errorSchema: this.errorSchema,
-          customFormats: this.customFormats,
-          customRule: this.customRule,
-          rootSchema: this.schema,
-          rootFormData: this.formData,
+          schema: self.schema,
+          uiSchema: self.uiSchema,
+          errorSchema: self.errorSchema,
+          rootSchema: self.schema,
+          rootFormData: formData,
           // 根节点的数据
           curNodePath: '',
           // 当前节点路径
           globalOptions: globalOptions,
           // 全局配置，差异化ui框架
-          formProps: _objectSpread2({
-            labelPosition: 'top',
-            labelSuffix: '：'
-          }, formProps)
+          formProps: formProps
         };
         return h(globalOptions.COMPONENT_MAP.form, {
           class: (_class = {
             genFromComponent: true,
             formInlineFooter: inlineFooter,
             formInline: inline
-          }, _defineProperty(_class, "genFromComponent_".concat(this.schema.id, "Form"), !!this.schema.id), _defineProperty(_class, "layoutColumn", !inline), _defineProperty(_class, "layoutColumn-".concat(layoutColumn), !inline), _class),
+          }, _defineProperty(_class, "genFromComponent_".concat(self.schema.id, "Form"), !!self.schema.id), _defineProperty(_class, "layoutColumn", !inline), _defineProperty(_class, "layoutColumn-".concat(layoutColumn), !inline), _class),
           ref: 'genEditForm',
           props: _objectSpread2({
-            model: self.formData
+            model: formData
           }, props.formProps)
         }, [h(SchemaField, {
           props: props

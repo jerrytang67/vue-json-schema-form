@@ -9537,7 +9537,7 @@
 
   var script = {
     name: 'FieldGroupWrap',
-    inject: ['genFormProvide'],
+    inject: ['$genFormProvide'],
     props: {
       // 当前节点路径
       curNodePath: {
@@ -9562,6 +9562,13 @@
       }
     },
     computed: {
+      genFormProvide: function genFormProvide() {
+        // vue3/vue2 响应式provide
+        // 实现方式差异如下：
+        // provide vue3 computed 直接为响应式数据
+        // provide vue2 需要计算属性访问原始值
+        return typeof this.$genFormProvide === 'function' ? this.$genFormProvide() : this.$genFormProvide.value;
+      },
       trueTitle: function trueTitle() {
         var title = this.title;
 
@@ -9569,7 +9576,8 @@
           return title;
         }
 
-        var genFormProvide = this.genFormProvide.value || this.genFormProvide;
+        debugger;
+        var genFormProvide = this.genFormProvide;
         var backTitle = genFormProvide.fallbackLabel && this.curNodePath.split('.').pop();
         if (backTitle !== "".concat(Number(backTitle))) return backTitle;
         return '';
@@ -9607,9 +9615,6 @@
    */
   // 递归参数，统一props
   var vueProps$1 = {
-    formProps: {
-      type: null
-    },
     // 全局的配置，用于 初始化差异，适配不同的ui框架
     globalOptions: {
       type: null
@@ -9630,18 +9635,6 @@
     },
     // 当前节点Error Schema
     errorSchema: {
-      type: Object,
-      default: function _default() {
-        return {};
-      }
-    },
-    // 自定义校验
-    customRule: {
-      type: Function,
-      default: null
-    },
-    // 自定义校验规则
-    customFormats: {
       type: Object,
       default: function _default() {
         return {};
@@ -9726,7 +9719,7 @@
   };
 
   var _hoisted_2$3 = /*#__PURE__*/Vue.createVNode("path", {
-    d: "M563.8 512l262.5-312.9c4.4-5.2.7-13.1-6.1-13.1h-79.8c-4.7 0-9.2 2.1-12.3 5.7L511.6 449.8 295.1\n            191.7c-3-3.6-7.5-5.7-12.3-5.7H203c-6.8 0-10.5 7.9-6.1 13.1L459.4 512 196.9 824.9A7.95 7.95 0\n            0 0 203 838h79.8c4.7 0 9.2-2.1 12.3-5.7l216.5-258.1 216.5 258.1c3 3.6 7.5 5.7 12.3 5.7h79.8c6.8 0 10.5-7.9 6.1-13.1L563.8 512z"
+    d: "M563.8 512l262.5-312.9c4.4-5.2.7-13.1-6.1-13.1h-79.8c-4.7 0-9.2 2.1-12.3 5.7L511.6 449.8 295.1\r\n            191.7c-3-3.6-7.5-5.7-12.3-5.7H203c-6.8 0-10.5 7.9-6.1 13.1L459.4 512 196.9 824.9A7.95 7.95 0\r\n            0 0 203 838h79.8c4.7 0 9.2-2.1 12.3-5.7l216.5-258.1 216.5 258.1c3 3.6 7.5 5.7 12.3 5.7h79.8c6.8 0 10.5-7.9 6.1-13.1L563.8 512z"
   }, null, -1
   /* HOISTED */
   );
@@ -9780,7 +9773,7 @@
   };
 
   var _hoisted_2$5 = /*#__PURE__*/Vue.createVNode("path", {
-    d: "M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 708c-22.1\n            0-40-17.9-40-40s17.9-40 40-40 40 17.9 40 40-17.9 40-40 40zm62.9-219.5a48.3 48.3 0 0\n            0-30.9 44.8V620c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8v-21.5c0-23.1 6.7-45.9 19.9-64.9 12.9-18.6 30.9-32.8\n            52.1-40.9 34-13.1 56-41.6 56-72.7 0-44.1-43.1-80-96-80s-96 35.9-96 80v7.6c0 4.4-3.6\n            8-8 8h-48c-4.4 0-8-3.6-8-8V420c0-39.3 17.2-76 48.4-103.3C430.4 290.4 470 276 512 276s81.6 14.5 111.6\n            40.7C654.8 344 672 380.7 672 420c0 57.8-38.1 109.8-97.1 132.5z"
+    d: "M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 708c-22.1\r\n            0-40-17.9-40-40s17.9-40 40-40 40 17.9 40 40-17.9 40-40 40zm62.9-219.5a48.3 48.3 0 0\r\n            0-30.9 44.8V620c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8v-21.5c0-23.1 6.7-45.9 19.9-64.9 12.9-18.6 30.9-32.8\r\n            52.1-40.9 34-13.1 56-41.6 56-72.7 0-44.1-43.1-80-96-80s-96 35.9-96 80v7.6c0 4.4-3.6\r\n            8-8 8h-48c-4.4 0-8-3.6-8-8V420c0-39.3 17.2-76 48.4-103.3C430.4 290.4 470 276 512 276s81.6 14.5 111.6\r\n            40.7C654.8 344 672 380.7 672 420c0 57.8-38.1 109.8-97.1 132.5z"
   }, null, -1
   /* HOISTED */
   );
@@ -9824,17 +9817,6 @@
         default: function _default() {
           return {};
         }
-      },
-      customFormats: {
-        type: Object,
-        default: function _default() {
-          return {};
-        }
-      },
-      // 自定义校验
-      customRule: {
-        type: Function,
-        default: null
       },
       widget: {
         type: [String, Function, Object],
@@ -9923,16 +9905,15 @@
           return {};
         }
       },
-      formProps: null,
       getWidget: null,
       globalOptions: null // 全局配置
 
     },
     emits: ['change'],
-    inheritAttrs: true,
+    // inheritAttrs: false,
     setup: function setup(props, _ref) {
       var emit = _ref.emit;
-      var genFormProvide = Vue.inject('genFormProvide');
+      var genFormProvide = Vue.inject('$genFormProvide');
       var widgetValue = Vue.computed({
         get: function get() {
           if (props.isFormData) return getPathVal(props.rootFormData, props.curNodePath);
@@ -9969,9 +9950,15 @@
       }
 
       return function () {
-        // 判断是否为根节点
+        // inject
+        var _genFormProvide$value = genFormProvide.value,
+            fallbackLabel$1 = _genFormProvide$value.fallbackLabel,
+            formProps = _genFormProvide$value.formProps,
+            customFormats = _genFormProvide$value.customFormats,
+            customRule = _genFormProvide$value.customRule; // 判断是否为根节点
+
         var isRootNode = isRootNodePath(props.curNodePath);
-        var miniDesModel = props.globalOptions.HELPERS.isMiniDes(props.formProps);
+        var miniDesModel = props.globalOptions.HELPERS.isMiniDes(formProps);
         var descriptionVNode = props.description ? Vue.h('div', {
           innerHTML: props.description,
           class: {
@@ -10003,7 +9990,7 @@
         } : {}); // 运行配置回退到 属性名
 
 
-        var _label = fallbackLabel(props.label, props.widget && genFormProvide.value.fallbackLabel, props.curNodePath);
+        var _label = fallbackLabel(props.label, props.widget && fallbackLabel$1, props.curNodePath);
 
         return Vue.h(resolveComponent(COMPONENT_MAP.formItem), _objectSpread2(_objectSpread2(_objectSpread2({
           class: _objectSpread2(_objectSpread2({}, props.fieldClass), {}, {
@@ -10023,7 +10010,7 @@
                 formData: value,
                 schema: props.schema,
                 uiSchema: props.uiSchema,
-                customFormats: props.customFormats,
+                customFormats: customFormats,
                 errorSchema: props.errorSchema,
                 required: props.required,
                 propPath: path2prop(props.curNodePath)
@@ -10035,10 +10022,8 @@
               } // customRule 如果存在自定义校验
 
 
-              var curCustomRule = props.customRule;
-
-              if (curCustomRule && typeof curCustomRule === 'function') {
-                return curCustomRule({
+              if (customRule && typeof customRule === 'function') {
+                return customRule({
                   field: props.curNodePath,
                   value: value,
                   rootFormData: props.rootFormData,
@@ -10069,7 +10054,7 @@
                 genFormLabel: true,
                 genFormItemRequired: props.required
               }
-            }, ["".concat(_label)].concat(_toConsumableArray(miniDescriptionVNode ? [miniDescriptionVNode] : []), ["".concat(props.formProps && props.formProps.labelSuffix || '')]));
+            }, ["".concat(_label)].concat(_toConsumableArray(miniDescriptionVNode ? [miniDescriptionVNode] : []), ["".concat(formProps && formProps.labelSuffix || '')]));
           }
         } : {}), {}, {
           // default
@@ -11298,11 +11283,18 @@
         } // 使用provide 传递跨组件数据
 
 
-        Vue.provide('genFormProvide', Vue.computed(function () {
+        var genFormProvide = Vue.computed(function () {
           return {
-            fallbackLabel: props.fallbackLabel
+            fallbackLabel: props.fallbackLabel,
+            customFormats: props.customFormats,
+            customRule: props.customRule,
+            formProps: _objectSpread2({
+              labelPosition: 'top',
+              labelSuffix: '：'
+            }, props.formProps)
           };
-        })); // rootFormData
+        });
+        Vue.provide('$genFormProvide', genFormProvide); // rootFormData
 
         var rootFormData = Vue.ref(getDefaultFormState(props.schema, props.modelValue, props.schema));
         var footerParams = Vue.computed(function () {
@@ -11396,30 +11388,24 @@
         return function () {
           var _class;
 
-          var _props$formProps = props.formProps,
-              _props$formProps$layo = _props$formProps.layoutColumn,
-              layoutColumn = _props$formProps$layo === void 0 ? 1 : _props$formProps$layo,
-              inlineFooter = _props$formProps.inlineFooter,
-              inline = _props$formProps.inline,
-              otherFormProps = _objectWithoutProperties(_props$formProps, ["layoutColumn", "inlineFooter", "inline"]);
+          var _genFormProvide$value = genFormProvide.value.formProps,
+              _genFormProvide$value2 = _genFormProvide$value.layoutColumn,
+              layoutColumn = _genFormProvide$value2 === void 0 ? 1 : _genFormProvide$value2,
+              inlineFooter = _genFormProvide$value.inlineFooter,
+              inline = _genFormProvide$value.inline,
+              otherFormProps = _objectWithoutProperties(_genFormProvide$value, ["layoutColumn", "inlineFooter", "inline"]);
 
           var schemaProps = {
             schema: props.schema,
             uiSchema: props.uiSchema,
             errorSchema: props.errorSchema,
-            customFormats: props.customFormats,
-            customRule: props.customRule,
             rootSchema: props.schema,
             rootFormData: rootFormData.value,
             // 根节点的数据
             curNodePath: '',
             // 当前节点路径
-            globalOptions: globalOptions,
-            // 全局配置，差异化ui框架
-            formProps: _objectSpread2({
-              labelSuffix: '：',
-              labelPosition: 'top'
-            }, otherFormProps)
+            globalOptions: globalOptions // 全局配置，差异化ui框架
+
           };
           return Vue.h(resolveComponent(globalOptions.COMPONENT_MAP.form), _objectSpread2({
             class: (_class = {
@@ -11432,7 +11418,7 @@
               emit('form-mounted', form);
             },
             model: rootFormData
-          }, schemaProps.formProps), {
+          }, otherFormProps), {
             default: function _default() {
               return [Vue.h(SchemaField, schemaProps), getDefaultSlot()];
             }
