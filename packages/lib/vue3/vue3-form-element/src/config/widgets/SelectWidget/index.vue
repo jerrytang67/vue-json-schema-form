@@ -6,7 +6,7 @@
             v-for="(item, index) in enumOptions"
             :key="index"
             :label="item.label"
-            :value="item.value"
+            :modelValue="item.value"
         ></el-option>
     </el-select>
 </template>
