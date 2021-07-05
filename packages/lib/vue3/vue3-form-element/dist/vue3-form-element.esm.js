@@ -214,7 +214,8 @@ function _toPropertyKey(arg) {
 /**
  * Created by Liu.Jun on 2020/4/25 14:45.
  */
-
+// import Vue from 'vue';
+// 内部使用 . ，配置数据key不能出现.
 var pathSeparator = '.'; // nodePath 转css类名
 
 function nodePath2ClassName(path) {

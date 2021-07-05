@@ -8331,7 +8331,8 @@
   /**
    * Created by Liu.Jun on 2020/4/25 14:45.
    */
-
+  // import Vue from 'vue';
+  // 内部使用 . ，配置数据key不能出现.
   var pathSeparator = '.'; // nodePath 转css类名
 
   function nodePath2ClassName(path) {
@@ -8348,7 +8349,7 @@
   } // 删除当前path值
 
   function deletePathVal(vueData, name) {
-    Vue__default['default'].delete(vueData, name);
+    delete vueData[name]; // Vue.delete(vueData, name);
   } // 设置当前path值
 
   function setPathVal(obj, path, value) {
@@ -8358,8 +8359,8 @@
     for (var i = 0; i < pathArr.length; i += 1) {
       if (pathArr.length - i < 2) {
         // 倒数第一个数据
-        // obj[pathArr[pathArr.length - 1]] = value;
-        Vue__default['default'].set(obj, pathArr[pathArr.length - 1], value);
+        obj[pathArr[pathArr.length - 1]] = value; // Vue.set(obj, pathArr[pathArr.length - 1], value);
+
         break;
       }
 
