@@ -3,7 +3,7 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('vue')) :
   typeof define === 'function' && define.amd ? define(['exports', 'vue'], factory) :
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.vue3FormElement = {}, global.Vue));
-}(this, (function (exports, Vue) { 'use strict';
+}(this, (function (exports, vue) { 'use strict';
 
   function _typeof(obj) {
     "@babel/helpers - typeof";
@@ -218,7 +218,8 @@
   /**
    * Created by Liu.Jun on 2020/4/25 14:45.
    */
-
+  // import Vue from 'vue';
+  // 内部使用 . ，配置数据key不能出现.
   var pathSeparator = '.'; // nodePath 转css类名
 
   function nodePath2ClassName(path) {
@@ -275,7 +276,7 @@
     }
   }
   function resolveComponent(component) {
-    if (typeof component === 'string') return Vue.resolveComponent(component);
+    if (typeof component === 'string') return vue.resolveComponent(component);
     return component;
   }
 
@@ -569,6 +570,17 @@
 
   function scm(a, b) {
     return a * b / gcd(a, b);
+  } // 打开新页面
+
+  function openNewPage(url) {
+    var target = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '_blank';
+    var a = document.createElement('a');
+    a.style.display = 'none';
+    a.target = target;
+    a.href = url;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   // $ref 引用
@@ -8569,6 +8581,8 @@
     var spec = {};
 
     if (containsSpec) {
+      spec.readonly = !!schema.readOnly;
+
       if (undefined !== schema.multipleOf) {
         // 组件计数器步长
         spec.step = schema.multipleOf;
@@ -8605,7 +8619,9 @@
 
 
     return _objectSpread2(_objectSpread2({
-      title: schema.title,
+      title: schema.title
+      /* || curNodePath.split('.').pop() */
+      ,
       // 默认使用 schema 的配置
       description: schema.description
     }, spec), getUserUiOptions({
@@ -8847,6 +8863,17 @@
       };
     });
   }
+  function fallbackLabel(oriLabel, isFallback, curNodePath) {
+    if (oriLabel) return oriLabel;
+
+    if (isFallback) {
+      var backLabel = curNodePath.split('.').pop(); // 过滤纯数字字符串
+
+      if (backLabel && backLabel !== "".concat(Number(backLabel))) return backLabel;
+    }
+
+    return '';
+  }
 
   var formUtils = /*#__PURE__*/Object.freeze({
     __proto__: null,
@@ -8864,7 +8891,8 @@
     isFixedItems: isFixedItems,
     isMultiSelect: isMultiSelect,
     allowAdditionalItems: allowAdditionalItems,
-    optionsList: optionsList
+    optionsList: optionsList,
+    fallbackLabel: fallbackLabel
   });
 
   var ajv$1 = createAjvInstance();
@@ -9091,7 +9119,7 @@
 
     // eslint-disable-next-line no-plusplus
     for (var i = 0; i < options.length; i++) {
-      var option = options[i]; // If the schema describes an object then we need to add slightly more
+      var option = retrieveSchema(options[i], rootSchema, formData); // If the schema describes an object then we need to add slightly more
       // strict matching to the schema, because unless the schema uses the
       // "requires" keyword, an object will match the schema as long as it
       // doesn't have matching keys with a conflicting type. To do this we use an
@@ -9234,7 +9262,7 @@
         return computeDefaults(itemSchema, Array.isArray(parentDefaults) ? parentDefaults[idx] : undefined, rootSchema, formData, includeUndefinedValues);
       });
     } else if ('oneOf' in schema) {
-      var matchSchema = schema.oneOf[getMatchingOption(formData, schema.oneOf, rootSchema)];
+      var matchSchema = retrieveSchema(schema.oneOf[getMatchingOption(formData, schema.oneOf, rootSchema)], rootSchema, formData);
 
       if (schema.properties && matchSchema.properties) {
         // 对象 oneOf 需要合并原属性和 oneOf 属性
@@ -9245,7 +9273,7 @@
         schema = matchSchema;
       }
     } else if ('anyOf' in schema) {
-      var _matchSchema = schema.anyOf[getMatchingOption(formData, schema.anyOf, rootSchema)];
+      var _matchSchema = retrieveSchema(schema.anyOf[getMatchingOption(formData, schema.anyOf, rootSchema)], rootSchema, formData);
 
       if (schema.properties && _matchSchema.properties) {
         // 对象 anyOf 需要合并原属性和 anyOf 属性
@@ -9400,6 +9428,10 @@
       },
       required: true
     },
+    fallbackLabel: {
+      type: Boolean,
+      default: false
+    },
     formProps: {
       type: Object,
       default: function _default() {
@@ -9471,13 +9503,13 @@
       // globalOptions 不需要响应式
       var COMPONENT_MAP = props.globalOptions.COMPONENT_MAP;
       return function () {
-        return Vue.h(resolveComponent(COMPONENT_MAP.formItem), _objectSpread2({
+        return vue.h(resolveComponent(COMPONENT_MAP.formItem), _objectSpread2({
           class: {
             formFooter_item: true
           }
         }, props.formItemAttrs), {
           default: function _default() {
-            return [Vue.h(resolveComponent(COMPONENT_MAP.button), {
+            return [vue.h(resolveComponent(COMPONENT_MAP.button), {
               onClick: function onClick() {
                 emit('cancel');
               }
@@ -9485,7 +9517,7 @@
               default: function _default() {
                 return props.cancelBtn;
               }
-            }), Vue.h(resolveComponent(COMPONENT_MAP.button), {
+            }), vue.h(resolveComponent(COMPONENT_MAP.button), {
               style: {
                 marginLeft: '10px'
               },
@@ -9504,14 +9536,86 @@
     }
   };
 
+  var script = {
+    name: 'FieldGroupWrap',
+    inject: ['$genFormProvide'],
+    props: {
+      // 当前节点路径
+      curNodePath: {
+        type: String,
+        default: ''
+      },
+      showTitle: {
+        type: Boolean,
+        default: true
+      },
+      showDescription: {
+        type: Boolean,
+        default: true
+      },
+      title: {
+        type: String,
+        default: ''
+      },
+      description: {
+        type: String,
+        default: ''
+      }
+    },
+    computed: {
+      genFormProvide: function genFormProvide() {
+        // vue3/vue2 响应式provide
+        // 实现方式差异如下：
+        // provide vue3 computed 直接为响应式数据
+        // provide vue2 需要计算属性访问原始值
+        return typeof this.$genFormProvide === 'function' ? this.$genFormProvide() : this.$genFormProvide.value;
+      },
+      trueTitle: function trueTitle() {
+        var title = this.title;
+
+        if (title) {
+          return title;
+        }
+
+        debugger;
+        var genFormProvide = this.genFormProvide;
+        var backTitle = genFormProvide.fallbackLabel && this.curNodePath.split('.').pop();
+        if (backTitle !== "".concat(Number(backTitle))) return backTitle;
+        return '';
+      }
+    }
+  };
+
+  var _hoisted_1 = {
+    class: "fieldGroupWrap"
+  };
+  var _hoisted_2 = {
+    key: 0,
+    class: "fieldGroupWrap_title"
+  };
+  var _hoisted_3 = {
+    class: "fieldGroupWrap_box"
+  };
+  function render(_ctx, _cache, $props, $setup, $data, $options) {
+    return vue.openBlock(), vue.createBlock("div", _hoisted_1, [$props.showTitle && $options.trueTitle ? (vue.openBlock(), vue.createBlock("h3", _hoisted_2, vue.toDisplayString($options.trueTitle), 1
+    /* TEXT */
+    )) : vue.createCommentVNode("v-if", true), $props.showDescription && $props.description ? (vue.openBlock(), vue.createBlock("p", {
+      key: 1,
+      class: "fieldGroupWrap_des",
+      innerHTML: $props.description
+    }, null, 8
+    /* PROPS */
+    , ["innerHTML"])) : vue.createCommentVNode("v-if", true), vue.createVNode("div", _hoisted_3, [vue.renderSlot(_ctx.$slots, "default")])]);
+  }
+
+  script.render = render;
+  script.__file = "utils/components/FieldGroupWrap.vue";
+
   /**
    * Created by Liu.Jun on 2020/4/22 18:58.
    */
   // 递归参数，统一props
   var vueProps$1 = {
-    formProps: {
-      type: null
-    },
     // 全局的配置，用于 初始化差异，适配不同的ui框架
     globalOptions: {
       type: null
@@ -9532,18 +9636,6 @@
     },
     // 当前节点Error Schema
     errorSchema: {
-      type: Object,
-      default: function _default() {
-        return {};
-      }
-    },
-    // 自定义校验
-    customRule: {
-      type: Function,
-      default: null
-    },
-    // 自定义校验规则
-    customFormats: {
       type: Object,
       default: function _default() {
         return {};
@@ -9581,67 +9673,20 @@
     }
   };
 
-  var script = {
-    name: 'FieldGroupWrap',
-    props: {
-      showTitle: {
-        type: Boolean,
-        default: true
-      },
-      showDescription: {
-        type: Boolean,
-        default: true
-      },
-      title: {
-        type: String,
-        default: ''
-      },
-      description: {
-        type: String,
-        default: ''
-      }
-    }
-  };
-
-  var _hoisted_1 = {
-    class: "fieldGroupWrap"
-  };
-  var _hoisted_2 = {
-    key: 0,
-    class: "fieldGroupWrap_title"
-  };
-  var _hoisted_3 = {
-    class: "fieldGroupWrap_box"
-  };
-  function render(_ctx, _cache, $props, $setup, $data, $options) {
-    return Vue.openBlock(), Vue.createBlock("div", _hoisted_1, [$props.showTitle && $props.title ? (Vue.openBlock(), Vue.createBlock("h3", _hoisted_2, Vue.toDisplayString($props.title), 1
-    /* TEXT */
-    )) : Vue.createCommentVNode("v-if", true), $props.showDescription && $props.description ? (Vue.openBlock(), Vue.createBlock("p", {
-      key: 1,
-      class: "fieldGroupWrap_des",
-      innerHTML: $props.description
-    }, null, 8
-    /* PROPS */
-    , ["innerHTML"])) : Vue.createCommentVNode("v-if", true), Vue.createVNode("div", _hoisted_3, [Vue.renderSlot(_ctx.$slots, "default")])]);
-  }
-
-  script.render = render;
-  script.__file = "vue3-core/src/components/FieldGroupWrap.vue";
-
   var _hoisted_1$1 = {
     class: "genFormIcon genFormIcon-down",
     xmlns: "http://www.w3.org/2000/svg",
     viewBox: "0 0 1024 1024"
   };
 
-  var _hoisted_2$1 = /*#__PURE__*/Vue.createVNode("path", {
+  var _hoisted_2$1 = /*#__PURE__*/vue.createVNode("path", {
     d: "M840.4 300H183.6c-19.7 0-30.7 20.8-18.5 35l328.4 380.8c9.4 10.9 27.5 10.9 37 0L858.9 335c12.2-14.2 1.2-35-18.5-35z"
   }, null, -1
   /* HOISTED */
   );
 
   function render$1(_ctx, _cache) {
-    return Vue.openBlock(), Vue.createBlock("svg", _hoisted_1$1, [_hoisted_2$1]);
+    return vue.openBlock(), vue.createBlock("svg", _hoisted_1$1, [_hoisted_2$1]);
   }
 
   var script$1 = {};
@@ -9654,14 +9699,14 @@
     viewBox: "0 0 1024 1024"
   };
 
-  var _hoisted_2$2 = /*#__PURE__*/Vue.createVNode("path", {
+  var _hoisted_2$2 = /*#__PURE__*/vue.createVNode("path", {
     d: "M858.9 689L530.5 308.2c-9.4-10.9-27.5-10.9-37 0L165.1 689c-12.2 14.2-1.2 35 18.5 35h656.8c19.7 0 30.7-20.8 18.5-35z"
   }, null, -1
   /* HOISTED */
   );
 
   function render$2(_ctx, _cache) {
-    return Vue.openBlock(), Vue.createBlock("svg", _hoisted_1$2, [_hoisted_2$2]);
+    return vue.openBlock(), vue.createBlock("svg", _hoisted_1$2, [_hoisted_2$2]);
   }
 
   var script$2 = {};
@@ -9674,14 +9719,14 @@
     viewBox: "0 0 1024 1024"
   };
 
-  var _hoisted_2$3 = /*#__PURE__*/Vue.createVNode("path", {
-    d: "M563.8 512l262.5-312.9c4.4-5.2.7-13.1-6.1-13.1h-79.8c-4.7 0-9.2 2.1-12.3 5.7L511.6 449.8 295.1\n            191.7c-3-3.6-7.5-5.7-12.3-5.7H203c-6.8 0-10.5 7.9-6.1 13.1L459.4 512 196.9 824.9A7.95 7.95 0\n            0 0 203 838h79.8c4.7 0 9.2-2.1 12.3-5.7l216.5-258.1 216.5 258.1c3 3.6 7.5 5.7 12.3 5.7h79.8c6.8 0 10.5-7.9 6.1-13.1L563.8 512z"
+  var _hoisted_2$3 = /*#__PURE__*/vue.createVNode("path", {
+    d: "M563.8 512l262.5-312.9c4.4-5.2.7-13.1-6.1-13.1h-79.8c-4.7 0-9.2 2.1-12.3 5.7L511.6 449.8 295.1\r\n            191.7c-3-3.6-7.5-5.7-12.3-5.7H203c-6.8 0-10.5 7.9-6.1 13.1L459.4 512 196.9 824.9A7.95 7.95 0\r\n            0 0 203 838h79.8c4.7 0 9.2-2.1 12.3-5.7l216.5-258.1 216.5 258.1c3 3.6 7.5 5.7 12.3 5.7h79.8c6.8 0 10.5-7.9 6.1-13.1L563.8 512z"
   }, null, -1
   /* HOISTED */
   );
 
   function render$3(_ctx, _cache) {
-    return Vue.openBlock(), Vue.createBlock("svg", _hoisted_1$3, [_hoisted_2$3]);
+    return vue.openBlock(), vue.createBlock("svg", _hoisted_1$3, [_hoisted_2$3]);
   }
 
   var script$3 = {};
@@ -9700,14 +9745,14 @@
     height: "200"
   };
 
-  var _hoisted_2$4 = /*#__PURE__*/Vue.createVNode("path", {
+  var _hoisted_2$4 = /*#__PURE__*/vue.createVNode("path", {
     d: "M474 152m8 0l60 0q8 0 8 8l0 704q0 8-8 8l-60 0q-8 0-8-8l0-704q0-8 8-8Z",
     "p-id": "10298"
   }, null, -1
   /* HOISTED */
   );
 
-  var _hoisted_3$1 = /*#__PURE__*/Vue.createVNode("path", {
+  var _hoisted_3$1 = /*#__PURE__*/vue.createVNode("path", {
     d: "M168 474m8 0l672 0q8 0 8 8l0 60q0 8-8 8l-672 0q-8 0-8-8l0-60q0-8 8-8Z",
     "p-id": "10299"
   }, null, -1
@@ -9715,7 +9760,7 @@
   );
 
   function render$4(_ctx, _cache) {
-    return Vue.openBlock(), Vue.createBlock("svg", _hoisted_1$4, [_hoisted_2$4, _hoisted_3$1]);
+    return vue.openBlock(), vue.createBlock("svg", _hoisted_1$4, [_hoisted_2$4, _hoisted_3$1]);
   }
 
   var script$4 = {};
@@ -9728,14 +9773,14 @@
     viewBox: "0 0 1024 1024"
   };
 
-  var _hoisted_2$5 = /*#__PURE__*/Vue.createVNode("path", {
-    d: "M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 708c-22.1\n            0-40-17.9-40-40s17.9-40 40-40 40 17.9 40 40-17.9 40-40 40zm62.9-219.5a48.3 48.3 0 0\n            0-30.9 44.8V620c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8v-21.5c0-23.1 6.7-45.9 19.9-64.9 12.9-18.6 30.9-32.8\n            52.1-40.9 34-13.1 56-41.6 56-72.7 0-44.1-43.1-80-96-80s-96 35.9-96 80v7.6c0 4.4-3.6\n            8-8 8h-48c-4.4 0-8-3.6-8-8V420c0-39.3 17.2-76 48.4-103.3C430.4 290.4 470 276 512 276s81.6 14.5 111.6\n            40.7C654.8 344 672 380.7 672 420c0 57.8-38.1 109.8-97.1 132.5z"
+  var _hoisted_2$5 = /*#__PURE__*/vue.createVNode("path", {
+    d: "M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 708c-22.1\r\n            0-40-17.9-40-40s17.9-40 40-40 40 17.9 40 40-17.9 40-40 40zm62.9-219.5a48.3 48.3 0 0\r\n            0-30.9 44.8V620c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8v-21.5c0-23.1 6.7-45.9 19.9-64.9 12.9-18.6 30.9-32.8\r\n            52.1-40.9 34-13.1 56-41.6 56-72.7 0-44.1-43.1-80-96-80s-96 35.9-96 80v7.6c0 4.4-3.6\r\n            8-8 8h-48c-4.4 0-8-3.6-8-8V420c0-39.3 17.2-76 48.4-103.3C430.4 290.4 470 276 512 276s81.6 14.5 111.6\r\n            40.7C654.8 344 672 380.7 672 420c0 57.8-38.1 109.8-97.1 132.5z"
   }, null, -1
   /* HOISTED */
   );
 
   function render$5(_ctx, _cache) {
-    return Vue.openBlock(), Vue.createBlock("svg", _hoisted_1$5, [_hoisted_2$5]);
+    return vue.openBlock(), vue.createBlock("svg", _hoisted_1$5, [_hoisted_2$5]);
   }
 
   var script$5 = {};
@@ -9773,17 +9818,6 @@
         default: function _default() {
           return {};
         }
-      },
-      customFormats: {
-        type: Object,
-        default: function _default() {
-          return {};
-        }
-      },
-      // 自定义校验
-      customRule: {
-        type: Function,
-        default: null
       },
       widget: {
         type: [String, Function, Object],
@@ -9872,16 +9906,16 @@
           return {};
         }
       },
-      formProps: null,
       getWidget: null,
       globalOptions: null // 全局配置
 
     },
     emits: ['change'],
-    inheritAttrs: true,
+    // inheritAttrs: false,
     setup: function setup(props, _ref) {
       var emit = _ref.emit;
-      var widgetValue = Vue.computed({
+      var genFormProvide = vue.inject('$genFormProvide');
+      var widgetValue = vue.computed({
         get: function get() {
           if (props.isFormData) return getPathVal(props.rootFormData, props.curNodePath);
           return props.curValue;
@@ -9908,26 +9942,32 @@
       } // 获取到widget组件实例
 
 
-      var widgetRef = Vue.ref(null); // 提供一种特殊的配置 允许直接访问到 widget vm
+      var widgetRef = vue.ref(null); // 提供一种特殊的配置 允许直接访问到 widget vm
 
       if (typeof props.getWidget === 'function') {
-        Vue.watch(widgetRef, function () {
+        vue.watch(widgetRef, function () {
           props.getWidget.call(null, widgetRef.value);
         });
       }
 
       return function () {
-        // 判断是否为根节点
+        // inject
+        var _genFormProvide$value = genFormProvide.value,
+            fallbackLabel$1 = _genFormProvide$value.fallbackLabel,
+            formProps = _genFormProvide$value.formProps,
+            customFormats = _genFormProvide$value.customFormats,
+            customRule = _genFormProvide$value.customRule; // 判断是否为根节点
+
         var isRootNode = isRootNodePath(props.curNodePath);
-        var miniDesModel = props.globalOptions.HELPERS.isMiniDes(props.formProps);
-        var descriptionVNode = props.description ? Vue.h('div', {
+        var miniDesModel = props.globalOptions.HELPERS.isMiniDes(formProps);
+        var descriptionVNode = props.description ? vue.h('div', {
           innerHTML: props.description,
           class: {
             genFromWidget_des: true
           }
         }) : null;
         var COMPONENT_MAP = props.globalOptions.COMPONENT_MAP;
-        var miniDescriptionVNode = miniDesModel && descriptionVNode ? Vue.h(resolveComponent(COMPONENT_MAP.popover), {
+        var miniDescriptionVNode = miniDesModel && descriptionVNode ? vue.h(resolveComponent(COMPONENT_MAP.popover), {
           style: {
             margin: '0 2px',
             fontSize: '16px',
@@ -9940,7 +9980,7 @@
             return descriptionVNode;
           },
           reference: function reference() {
-            return Vue.h(script$5);
+            return vue.h(script$5);
           }
         }) : null; // form-item style
 
@@ -9948,9 +9988,12 @@
           width: props.width,
           flexBasis: props.width,
           paddingRight: '10px'
-        } : {});
+        } : {}); // 运行配置回退到 属性名
 
-        return Vue.h(resolveComponent(COMPONENT_MAP.formItem), _objectSpread2(_objectSpread2(_objectSpread2({
+
+        var _label = fallbackLabel(props.label, props.widget && fallbackLabel$1, props.curNodePath);
+
+        return vue.h(resolveComponent(COMPONENT_MAP.formItem), _objectSpread2(_objectSpread2(_objectSpread2({
           class: _objectSpread2(_objectSpread2({}, props.fieldClass), {}, {
             genFormItem: true
           }),
@@ -9968,7 +10011,7 @@
                 formData: value,
                 schema: props.schema,
                 uiSchema: props.uiSchema,
-                customFormats: props.customFormats,
+                customFormats: customFormats,
                 errorSchema: props.errorSchema,
                 required: props.required,
                 propPath: path2prop(props.curNodePath)
@@ -9980,10 +10023,8 @@
               } // customRule 如果存在自定义校验
 
 
-              var curCustomRule = props.customRule;
-
-              if (curCustomRule && typeof curCustomRule === 'function') {
-                return curCustomRule({
+              if (customRule && typeof customRule === 'function') {
+                return customRule({
                   field: props.curNodePath,
                   value: value,
                   rootFormData: props.rootFormData,
@@ -10000,26 +10041,26 @@
         } : {}), _objectSpread2(_objectSpread2({
           // 错误只能显示一行，多余...
           error: function error(slotProps) {
-            return slotProps.error ? Vue.h('div', {
+            return slotProps.error ? vue.h('div', {
               class: {
                 formItemErrorBox: true
               },
               title: slotProps.error
             }, [slotProps.error]) : null;
           }
-        }, props.label ? {
+        }, _label ? {
           label: function label() {
-            return Vue.h('span', {
+            return vue.h('span', {
               class: {
                 genFormLabel: true,
                 genFormItemRequired: props.required
               }
-            }, ["".concat(props.label)].concat(_toConsumableArray(miniDescriptionVNode ? [miniDescriptionVNode] : []), ["".concat(props.formProps && props.formProps.labelSuffix || '')]));
+            }, ["".concat(_label)].concat(_toConsumableArray(miniDescriptionVNode ? [miniDescriptionVNode] : []), ["".concat(formProps && formProps.labelSuffix || '')]));
           }
         } : {}), {}, {
           // default
           default: function _default(otherAttrs) {
-            return [].concat(_toConsumableArray(!miniDesModel && descriptionVNode ? [descriptionVNode] : []), _toConsumableArray(props.widget ? [Vue.h( // 关键输入组件
+            return [].concat(_toConsumableArray(!miniDesModel && descriptionVNode ? [descriptionVNode] : []), _toConsumableArray(props.widget ? [vue.h( // 关键输入组件
             resolveComponent(props.widget), _objectSpread2(_objectSpread2(_objectSpread2({
               style: props.widgetStyle,
               class: props.widgetClass
@@ -10076,10 +10117,12 @@
       };
 
       return function () {
+        var curNodePath = props.curNodePath;
+
         var _getUiOptions = getUiOptions({
           schema: props.schema,
           uiSchema: props.uiSchema,
-          curNodePath: props.curNodePath,
+          curNodePath: curNodePath,
           rootFormData: props.rootFormData
         }),
             title = _getUiOptions.title,
@@ -10103,26 +10146,27 @@
               curDependent = _isDependOn.curDependent; // onlyShowWhenDependent 只渲染被依赖的属性
 
 
-          return isDependency && onlyShowIfDependent && !curDependent ? null : Vue.h(SchemaField, _objectSpread2(_objectSpread2({
+          return isDependency && onlyShowIfDependent && !curDependent ? null : vue.h(SchemaField, _objectSpread2(_objectSpread2({
             key: name
           }, props), {}, {
             schema: props.schema.properties[name],
             uiSchema: props.uiSchema[name],
             errorSchema: props.errorSchema[name],
             required: required || curDependent,
-            curNodePath: computedCurPath(props.curNodePath, name)
+            curNodePath: computedCurPath(curNodePath, name)
           }));
         });
-        return Vue.h(script, _objectSpread2({
+        return vue.h(script, _objectSpread2({
           title: title,
           description: description,
           showTitle: showTitle,
           showDescription: showDescription,
+          curNodePath: curNodePath,
           class: _objectSpread2({}, fieldClass),
           style: fieldStyle
         }, fieldAttrs), {
           default: function _default() {
-            return [].concat(_toConsumableArray(propertiesVNodeList), _toConsumableArray(props.needValidFieldGroup ? [Vue.h(Widget, {
+            return [].concat(_toConsumableArray(propertiesVNodeList), _toConsumableArray(props.needValidFieldGroup ? [vue.h(Widget, {
               key: 'validateWidget-object',
               class: {
                 validateWidget: true,
@@ -10138,7 +10182,7 @@
               }, {}),
               uiSchema: props.uiSchema,
               errorSchema: props.errorSchema,
-              curNodePath: props.curNodePath,
+              curNodePath: curNodePath,
               rootFormData: props.rootFormData,
               globalOptions: props.globalOptions
             })] : []));
@@ -10153,7 +10197,7 @@
     props: vueProps$1,
     setup: function setup(props, _ref) {
       var attrs = _ref.attrs;
-      var widgetConfig = Vue.computed(function () {
+      var widgetConfig = vue.computed(function () {
         // 可能是枚举数据使用select组件，否则使用 input
         var enumOptions = isSelect(props.schema) && optionsList(props.schema, props.uiSchema, props.curNodePath, props.rootFormData);
         var tempWidgetConfig = getWidgetConfig({
@@ -10175,7 +10219,7 @@
         return tempWidgetConfig;
       });
       return function () {
-        return Vue.h(Widget, _objectSpread2(_objectSpread2(_objectSpread2({}, props), attrs), widgetConfig.value));
+        return vue.h(Widget, _objectSpread2(_objectSpread2(_objectSpread2({}, props), attrs), widgetConfig.value));
       };
     }
   };
@@ -10186,7 +10230,7 @@
     setup: function setup(props, _ref) {
       var attrs = _ref.attrs;
       return function () {
-        return Vue.h(StringField, _objectSpread2(_objectSpread2({}, props), attrs));
+        return vue.h(StringField, _objectSpread2(_objectSpread2({}, props), attrs));
       };
     }
   };
@@ -10197,7 +10241,7 @@
     setup: function setup(props, _ref) {
       var attrs = _ref.attrs;
       return function () {
-        return Vue.h(StringField, _objectSpread2(_objectSpread2({}, props), attrs));
+        return vue.h(StringField, _objectSpread2(_objectSpread2({}, props), attrs));
       };
     }
   };
@@ -10229,7 +10273,7 @@
           };
         });
         widgetConfig.uiProps.enumOptions = widgetConfig.uiProps.enumOptions || enumOptions;
-        return Vue.h(Widget, _objectSpread2(_objectSpread2(_objectSpread2({}, attrs), props), widgetConfig));
+        return vue.h(Widget, _objectSpread2(_objectSpread2(_objectSpread2({}, attrs), props), widgetConfig));
       };
     }
   };
@@ -10277,7 +10321,7 @@
     setup: function setup(props, _ref) {
       var emit = _ref.emit;
       // 是否可添加
-      var canAdd = Vue.computed(function () {
+      var canAdd = vue.computed(function () {
         var addable = props.addable,
             maxItems = props.maxItems,
             vNodeList = props.vNodeList; // 配置不可添加
@@ -10291,7 +10335,7 @@
         return true;
       }); // 是否可移除
 
-      var canRemove = Vue.computed(function () {
+      var canRemove = vue.computed(function () {
         var removable = props.removable,
             minItems = props.minItems,
             vNodeList = props.vNodeList; // 配置不可移除
@@ -10308,7 +10352,7 @@
         // 没有数据，且不能添加不渲染该组件
         if (props.vNodeList.length <= 0 && !props.addable) return null; // 是否可继续添加元素
 
-        return Vue.h('div', {
+        return vue.h('div', {
           class: {
             arrayOrderList: true
           }
@@ -10317,20 +10361,20 @@
               VNodeItem = _ref2.vNode;
           var trueIndex = props.tupleItemsLength + index;
           var indexNumber = index + 1;
-          return Vue.h('div', {
+          return vue.h('div', {
             key: key,
             class: {
               arrayOrderList_item: true
             }
-          }, [props.showIndexNumber ? Vue.h('div', {
+          }, [props.showIndexNumber ? vue.h('div', {
             class: {
               arrayListItem_index: true
             }
-          }, indexNumber) : null, Vue.h('div', {
+          }, indexNumber) : null, vue.h('div', {
             class: {
               arrayListItem_operateTool: true
             }
-          }, [Vue.h('button', {
+          }, [vue.h('button', {
             // 配置不可排序不显示排序按钮
             style: _objectSpread2({}, !props.sortable ? {
               display: 'none'
@@ -10349,7 +10393,7 @@
                 }
               });
             }
-          }, [Vue.h(script$2)]), Vue.h('button', {
+          }, [vue.h(script$2)]), vue.h('button', {
             // 配置不可排序不显示排序按钮
             style: _objectSpread2({}, !props.sortable ? {
               display: 'none'
@@ -10368,7 +10412,7 @@
                 }
               });
             }
-          }, [Vue.h(script$1)]), Vue.h('button', {
+          }, [vue.h(script$1)]), vue.h('button', {
             // 配置不可移除不显示移除按钮
             style: _objectSpread2({}, !props.removable ? {
               display: 'none'
@@ -10387,19 +10431,19 @@
                 }
               });
             }
-          }, [Vue.h(script$3)])]), Vue.h('div', {
+          }, [vue.h(script$3)])]), vue.h('div', {
             class: {
               arrayListItem_content: true
             }
           }, [VNodeItem])]);
-        }).concat([Vue.h('p', {
+        }).concat([vue.h('p', {
           style: _objectSpread2({}, !canAdd.value ? {
             display: 'none'
           } : {}),
           class: {
             arrayOrderList_bottomAddBtn: true
           }
-        }, [Vue.h('button', {
+        }, [vue.h('button', {
           class: {
             bottomAddBtn: true,
             'is-plain': true,
@@ -10411,7 +10455,7 @@
               command: 'add'
             });
           }
-        }, [Vue.h(script$4, {
+        }, [vue.h(script$4, {
           style: {
             marginRight: '5px'
           }
@@ -10463,7 +10507,7 @@
           }, index);
           return {
             key: item.key,
-            vNode: Vue.h(SchemaField, _objectSpread2(_objectSpread2({
+            vNode: vue.h(SchemaField, _objectSpread2(_objectSpread2({
               key: item.key
             }, props), {}, {
               schema: schema.items,
@@ -10474,17 +10518,18 @@
             }))
           };
         });
-        return Vue.h(script, {
+        return vue.h(script, {
           title: title,
           description: description,
           showTitle: showTitle,
           showDescription: showDescription,
+          curNodePath: curNodePath,
           class: fieldClass,
           attrs: fieldAttrs,
           style: fieldStyle
         }, {
           default: function _default() {
-            return Vue.h(ArrayOrderList, _objectSpread2(_objectSpread2({}, attrs), {}, {
+            return vue.h(ArrayOrderList, _objectSpread2(_objectSpread2({}, attrs), {}, {
               vNodeList: arrayItemsVNodeList,
               showIndexNumber: showIndexNumber,
               addable: addable,
@@ -10532,7 +10577,7 @@
           widgetConfig.uiProps.enumOptions = enumOptions;
         }
 
-        return Vue.h(Widget, _objectSpread2(_objectSpread2(_objectSpread2({}, attrs), props), widgetConfig));
+        return vue.h(Widget, _objectSpread2(_objectSpread2(_objectSpread2({}, attrs), props), widgetConfig));
       };
     }
   };
@@ -10610,7 +10655,7 @@
 
         var cutOfArr = cutOff(props.itemsFormData, props.schema.items.length - 1);
         var tupleVNodeArr = cutOfArr[0].map(function (item, index) {
-          return Vue.h(SchemaField, _objectSpread2(_objectSpread2({
+          return vue.h(SchemaField, _objectSpread2(_objectSpread2({
             key: item.key
           }, props), {}, {
             required: ![].concat(schema.items[index].type).includes('null'),
@@ -10628,7 +10673,7 @@
           }, index);
           return {
             key: item.key,
-            vNode: Vue.h(SchemaField, _objectSpread2(_objectSpread2({
+            vNode: vue.h(SchemaField, _objectSpread2(_objectSpread2({
               key: item.key
             }, props), {}, {
               schema: schema.additionalItems,
@@ -10642,18 +10687,19 @@
 
         var trueAddable = (addable === undefined ? true : addable) && allowAdditionalItems(props.schema); // 默认循环固定配置的数据 长度外的使用ArrayOrderList渲染
 
-        return Vue.h(script, _objectSpread2(_objectSpread2({
+        return vue.h(script, _objectSpread2(_objectSpread2({
           title: title,
           description: description,
           showTitle: showTitle,
-          showDescription: showDescription
+          showDescription: showDescription,
+          curNodePath: curNodePath
         }, fieldAttrs), {}, {
           class: fieldClass,
           style: fieldStyle
         }), {
           default: function _default() {
             return [].concat(_toConsumableArray(tupleVNodeArr), [// additional items
-            Vue.h(ArrayOrderList, {
+            vue.h(ArrayOrderList, {
               onArrayOperate: function onArrayOperate() {
                 for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
                   args[_key] = arguments[_key];
@@ -10696,7 +10742,7 @@
         rootFormData: rootFormData
       });
       return function () {
-        return Vue.h(Widget, _objectSpread2(_objectSpread2(_objectSpread2({}, attrs), props), widgetConfig));
+        return vue.h(Widget, _objectSpread2(_objectSpread2(_objectSpread2({}, attrs), props), widgetConfig));
       };
     }
   };
@@ -10716,17 +10762,17 @@
       }; // 通过维护一份key，一份值 来解决list key的问题
 
 
-      var formKeys = Vue.ref(getCurFormData().map(function () {
+      var formKeys = vue.ref(getCurFormData().map(function () {
         return genId();
       })); // 当前 formData
 
-      var curFormData = Vue.computed(function () {
+      var curFormData = vue.computed(function () {
         return getCurFormData();
       });
-      Vue.watch(curFormData, function (newVal, oldVal) {
+      vue.watch(curFormData, function (newVal, oldVal) {
         // 引用类型，当值不相等，说明是被重新赋值
         // 这里应该对比原始值
-        if (newVal !== oldVal && Vue.toRaw(newVal) !== Vue.toRaw(oldVal) && Array.isArray(newVal)) {
+        if (newVal !== oldVal && vue.toRaw(newVal) !== vue.toRaw(oldVal) && Array.isArray(newVal)) {
           formKeys.value = newVal.map(function () {
             return genId();
           });
@@ -10735,7 +10781,7 @@
         deep: true
       }); // 处理了key的formData
 
-      var itemsFormData = Vue.computed(function () {
+      var itemsFormData = vue.computed(function () {
         return curFormData.value.map(function (item, index) {
           return {
             key: formKeys.value[index],
@@ -10852,7 +10898,7 @@
 
         if (isMultiSelect(schema, rootSchema)) {
           // item 为枚举固定值
-          return Vue.h(ArrayFieldMultiSelect, _objectSpread2(_objectSpread2({}, props), {}, {
+          return vue.h(ArrayFieldMultiSelect, _objectSpread2(_objectSpread2({}, props), {}, {
             class: _defineProperty({}, lowerCase(ArrayFieldMultiSelect.name), true)
           }));
         } // 特殊处理 date datetime time url-upload
@@ -10861,7 +10907,7 @@
 
 
         if (schema.format || schema['ui:widget'] || uiSchema['ui:widget']) {
-          return Vue.h(ArrayFieldSpecialFormat, _objectSpread2(_objectSpread2({}, props), {}, {
+          return vue.h(ArrayFieldSpecialFormat, _objectSpread2(_objectSpread2({}, props), {}, {
             class: _defineProperty({}, lowerCase(ArrayFieldSpecialFormat.name), true)
           }));
         } // https://json-schema.org/understanding-json-schema/reference/array.html#list-validation
@@ -10869,13 +10915,13 @@
 
 
         var CurrentField = isFixedItems(schema) ? ArrayFieldTuple : ArrayFieldNormal;
-        return Vue.h('div', [Vue.h(CurrentField, _objectSpread2(_objectSpread2({
+        return vue.h('div', [vue.h(CurrentField, _objectSpread2(_objectSpread2({
           itemsFormData: itemsFormData.value
         }, props), {}, {
           onArrayOperate: handleArrayOperate,
           class: _defineProperty({}, lowerCase(CurrentField.name), true)
         })), // 插入一个Widget，校验 array - maxItems. minItems. uniqueItems 等items外的属性校验
-        props.needValidFieldGroup ? Vue.h(Widget, {
+        props.needValidFieldGroup ? vue.h(Widget, {
           key: 'validateWidget-array',
           class: {
             validateWidget: true,
@@ -10921,7 +10967,7 @@
       }; // 当前选中 option 项
 
 
-      var curSelectIndex = Vue.ref(computedCurSelectIndexByFormData(getPathVal(props.rootFormData, props.curNodePath))); // 下拉选项 VNode
+      var curSelectIndex = vue.ref(computedCurSelectIndexByFormData(getPathVal(props.rootFormData, props.curNodePath))); // 下拉选项 VNode
 
       var getSelectBoxVNode = function getSelectBoxVNode() {
         // 下拉选项参数
@@ -10962,7 +11008,7 @@
         // 选择框 VNode
 
 
-        return Vue.h(Widget, _objectSpread2(_objectSpread2({
+        return vue.h(Widget, _objectSpread2(_objectSpread2({
           key: "fieldSelect_".concat(props.combiningType),
           class: _defineProperty({}, "fieldSelect_".concat(props.combiningType), true),
           isFormData: false,
@@ -10978,7 +11024,7 @@
       // 对新option计算默认值
 
 
-      Vue.watch(curSelectIndex, function (newVal, oldVal) {
+      vue.watch(curSelectIndex, function (newVal, oldVal) {
         var curFormData = getPathVal(props.rootFormData, props.curNodePath); // 计算出 新选项默认值
 
         var newOptionData = getDefaultFormState(props.selectList[newVal], undefined, props.rootSchema);
@@ -11027,7 +11073,7 @@
 
           var origSchema = Object.assign({}, props.schema);
           delete origSchema[props.combiningType];
-          originVNode = Vue.h(SchemaField, _objectSpread2(_objectSpread2({
+          originVNode = vue.h(SchemaField, _objectSpread2(_objectSpread2({
             key: "origin_".concat(props.combiningType),
             class: (_class2 = {}, _defineProperty(_class2, "".concat(props.combiningType, "_originBox"), true), _defineProperty(_class2, "".concat(pathClassName, "-originBox"), true), _class2)
           }, props), {}, {
@@ -11070,7 +11116,7 @@
           }), function (key) {
             return key === props.combiningType ? undefined : "err:".concat(key);
           });
-          childrenVNodeList.push(Vue.h(SchemaField, _objectSpread2(_objectSpread2({
+          childrenVNodeList.push(vue.h(SchemaField, _objectSpread2(_objectSpread2({
             key: "appendSchema_".concat(props.combiningType)
           }, props), {}, {
             schema: _objectSpread2({
@@ -11086,7 +11132,7 @@
         } // oneOf 校验 VNode
 
 
-        childrenVNodeList.push(Vue.h(Widget, {
+        childrenVNodeList.push(vue.h(Widget, {
           key: "validateWidget-".concat(props.combiningType),
           class: _defineProperty({
             validateWidget: true
@@ -11098,7 +11144,7 @@
           rootFormData: props.rootFormData,
           globalOptions: props.globalOptions
         }));
-        return Vue.h('div', [originVNode, Vue.h('div', {
+        return vue.h('div', [originVNode, vue.h('div', {
           key: "appendBox_".concat(props.combiningType),
           class: (_class4 = {
             appendCombining_box: true
@@ -11114,7 +11160,7 @@
       var attrs = _ref.attrs,
           slots = _ref.slots;
       return function () {
-        return Vue.h(SelectLinkageField, _objectSpread2(_objectSpread2({}, attrs), {}, {
+        return vue.h(SelectLinkageField, _objectSpread2(_objectSpread2({}, attrs), {}, {
           combiningType: 'anyOf',
           selectList: attrs.schema.anyOf
         }), slots);
@@ -11128,7 +11174,7 @@
       var attrs = _ref.attrs,
           slots = _ref.slots;
       return function () {
-        return Vue.h(SelectLinkageField, _objectSpread2(_objectSpread2({}, attrs), {}, {
+        return vue.h(SelectLinkageField, _objectSpread2(_objectSpread2({}, attrs), {}, {
           combiningType: 'oneOf',
           selectList: attrs.schema.oneOf
         }), slots);
@@ -11191,7 +11237,7 @@
           var _class;
 
           // anyOf
-          return Vue.h(resolveComponent(FIELDS_MAPS.anyOf), _objectSpread2({
+          return vue.h(resolveComponent(FIELDS_MAPS.anyOf), _objectSpread2({
             class: (_class = {}, _defineProperty(_class, "".concat(pathClassName, "-anyOf"), true), _defineProperty(_class, "fieldItem", true), _defineProperty(_class, "anyOfField", true), _class)
           }, curProps));
         }
@@ -11200,12 +11246,12 @@
           var _class2;
 
           // oneOf
-          return Vue.h(resolveComponent(FIELDS_MAPS.oneOf), _objectSpread2({
+          return vue.h(resolveComponent(FIELDS_MAPS.oneOf), _objectSpread2({
             class: (_class2 = {}, _defineProperty(_class2, "".concat(pathClassName, "-oneOf"), true), _defineProperty(_class2, "fieldItem", true), _defineProperty(_class2, "oneOfField", true), _class2)
           }, curProps));
         }
 
-        return fieldComponent && !hiddenWidget ? Vue.h(resolveComponent(fieldComponent), _objectSpread2(_objectSpread2({}, curProps), {}, {
+        return fieldComponent && !hiddenWidget ? vue.h(resolveComponent(fieldComponent), _objectSpread2(_objectSpread2({}, curProps), {}, {
           fieldProps: fieldProps,
           class: (_class3 = {}, _defineProperty(_class3, lowerCase(fieldComponent.name) || fieldComponent, true), _defineProperty(_class3, "hiddenWidget", hiddenWidget), _defineProperty(_class3, "fieldItem", true), _defineProperty(_class3, pathClassName, true), _class3)
         })) : null;
@@ -11225,7 +11271,7 @@
 
         if (!Form.installed && globalOptions.WIDGET_MAP.widgetComponents) {
           // global components
-          var internalInstance = Vue.getCurrentInstance();
+          var internalInstance = vue.getCurrentInstance();
           Object.entries(globalOptions.WIDGET_MAP.widgetComponents).forEach(function (_ref2) {
             var _ref3 = _slicedToArray(_ref2, 2),
                 componentName = _ref3[0],
@@ -11235,11 +11281,24 @@
           }); // 只注册一次
 
           Form.installed = true;
-        } // rootFormData
+        } // 使用provide 传递跨组件数据
 
 
-        var rootFormData = Vue.ref(getDefaultFormState(props.schema, props.modelValue, props.schema));
-        var footerParams = Vue.computed(function () {
+        var genFormProvide = vue.computed(function () {
+          return {
+            fallbackLabel: props.fallbackLabel,
+            customFormats: props.customFormats,
+            customRule: props.customRule,
+            formProps: _objectSpread2({
+              labelPosition: 'top',
+              labelSuffix: '：'
+            }, props.formProps)
+          };
+        });
+        vue.provide('$genFormProvide', genFormProvide); // rootFormData
+
+        var rootFormData = vue.ref(getDefaultFormState(props.schema, props.modelValue, props.schema));
+        var footerParams = vue.computed(function () {
           return _objectSpread2({
             show: true,
             okBtn: '保存',
@@ -11271,19 +11330,19 @@
         }; // emit v-model，同步值
 
 
-        Vue.watch(rootFormData, function (newValue, oldValue) {
+        vue.watch(rootFormData, function (newValue, oldValue) {
           emitFormDataChange(newValue, oldValue);
         }, {
           deep: true
         }); // schema 被重新赋值
 
-        Vue.watch(function () {
+        vue.watch(function () {
           return props.schema;
         }, function (newVal, oldVal) {
           willReceiveProps(newVal, oldVal);
         }); // model value 变更
 
-        Vue.watch(function () {
+        vue.watch(function () {
           return props.modelValue;
         }, function (newVal, oldVal) {
           willReceiveProps(newVal, oldVal);
@@ -11302,7 +11361,7 @@
           }
 
           if (footerParams.value.show) {
-            return Vue.h(FormFooter, {
+            return vue.h(FormFooter, {
               globalOptions: globalOptions,
               okBtn: footerParams.value.okBtn,
               cancelBtn: footerParams.value.cancelBtn,
@@ -11330,32 +11389,26 @@
         return function () {
           var _class;
 
-          var _props$formProps = props.formProps,
-              _props$formProps$layo = _props$formProps.layoutColumn,
-              layoutColumn = _props$formProps$layo === void 0 ? 1 : _props$formProps$layo,
-              inlineFooter = _props$formProps.inlineFooter,
-              inline = _props$formProps.inline,
-              otherFormProps = _objectWithoutProperties(_props$formProps, ["layoutColumn", "inlineFooter", "inline"]);
+          var _genFormProvide$value = genFormProvide.value.formProps,
+              _genFormProvide$value2 = _genFormProvide$value.layoutColumn,
+              layoutColumn = _genFormProvide$value2 === void 0 ? 1 : _genFormProvide$value2,
+              inlineFooter = _genFormProvide$value.inlineFooter,
+              inline = _genFormProvide$value.inline,
+              otherFormProps = _objectWithoutProperties(_genFormProvide$value, ["layoutColumn", "inlineFooter", "inline"]);
 
           var schemaProps = {
             schema: props.schema,
             uiSchema: props.uiSchema,
             errorSchema: props.errorSchema,
-            customFormats: props.customFormats,
-            customRule: props.customRule,
             rootSchema: props.schema,
             rootFormData: rootFormData.value,
             // 根节点的数据
             curNodePath: '',
             // 当前节点路径
-            globalOptions: globalOptions,
-            // 全局配置，差异化ui框架
-            formProps: _objectSpread2({
-              labelSuffix: '：',
-              labelPosition: 'top'
-            }, otherFormProps)
+            globalOptions: globalOptions // 全局配置，差异化ui框架
+
           };
-          return Vue.h(resolveComponent(globalOptions.COMPONENT_MAP.form), _objectSpread2({
+          return vue.h(resolveComponent(globalOptions.COMPONENT_MAP.form), _objectSpread2({
             class: (_class = {
               genFromComponent: true,
               formInlineFooter: inlineFooter,
@@ -11366,9 +11419,9 @@
               emit('form-mounted', form);
             },
             model: rootFormData
-          }, schemaProps.formProps), {
+          }, otherFormProps), {
             default: function _default() {
-              return [Vue.h(SchemaField, schemaProps), getDefaultSlot()];
+              return [vue.h(SchemaField, schemaProps), getDefaultSlot()];
             }
           });
         };
@@ -11396,19 +11449,19 @@
   };
 
   function render$6(_ctx, _cache, $props, $setup, $data, $options) {
-    var _component_el_checkbox = Vue.resolveComponent("el-checkbox");
+    var _component_el_checkbox = vue.resolveComponent("el-checkbox");
 
-    var _component_el_checkbox_group = Vue.resolveComponent("el-checkbox-group");
+    var _component_el_checkbox_group = vue.resolveComponent("el-checkbox-group");
 
-    return Vue.openBlock(), Vue.createBlock(_component_el_checkbox_group, _ctx.$attrs, {
-      default: Vue.withCtx(function () {
-        return [(Vue.openBlock(true), Vue.createBlock(Vue.Fragment, null, Vue.renderList($props.enumOptions, function (item, index) {
-          return Vue.openBlock(), Vue.createBlock(_component_el_checkbox, {
+    return vue.openBlock(), vue.createBlock(_component_el_checkbox_group, _ctx.$attrs, {
+      default: vue.withCtx(function () {
+        return [(vue.openBlock(true), vue.createBlock(vue.Fragment, null, vue.renderList($props.enumOptions, function (item, index) {
+          return vue.openBlock(), vue.createBlock(_component_el_checkbox, {
             key: index,
             label: item.value
           }, {
-            default: Vue.withCtx(function () {
-              return [Vue.createTextVNode(Vue.toDisplayString(item.label), 1
+            default: vue.withCtx(function () {
+              return [vue.createTextVNode(vue.toDisplayString(item.label), 1
               /* TEXT */
               )];
             }),
@@ -11446,19 +11499,19 @@
   };
 
   function render$7(_ctx, _cache, $props, $setup, $data, $options) {
-    var _component_el_radio = Vue.resolveComponent("el-radio");
+    var _component_el_radio = vue.resolveComponent("el-radio");
 
-    var _component_el_radio_group = Vue.resolveComponent("el-radio-group");
+    var _component_el_radio_group = vue.resolveComponent("el-radio-group");
 
-    return Vue.openBlock(), Vue.createBlock(_component_el_radio_group, _ctx.$attrs, {
-      default: Vue.withCtx(function () {
-        return [(Vue.openBlock(true), Vue.createBlock(Vue.Fragment, null, Vue.renderList($props.enumOptions, function (item, index) {
-          return Vue.openBlock(), Vue.createBlock(_component_el_radio, {
+    return vue.openBlock(), vue.createBlock(_component_el_radio_group, _ctx.$attrs, {
+      default: vue.withCtx(function () {
+        return [(vue.openBlock(true), vue.createBlock(vue.Fragment, null, vue.renderList($props.enumOptions, function (item, index) {
+          return vue.openBlock(), vue.createBlock(_component_el_radio, {
             key: index,
             label: item.value
           }, {
-            default: Vue.withCtx(function () {
-              return [Vue.createTextVNode(Vue.toDisplayString(item.label), 1
+            default: vue.withCtx(function () {
+              return [vue.createTextVNode(vue.toDisplayString(item.label), 1
               /* TEXT */
               )];
             }),
@@ -11496,14 +11549,14 @@
   };
 
   function render$8(_ctx, _cache, $props, $setup, $data, $options) {
-    var _component_el_option = Vue.resolveComponent("el-option");
+    var _component_el_option = vue.resolveComponent("el-option");
 
-    var _component_el_select = Vue.resolveComponent("el-select");
+    var _component_el_select = vue.resolveComponent("el-select");
 
-    return Vue.openBlock(), Vue.createBlock(_component_el_select, _ctx.$attrs, {
-      default: Vue.withCtx(function () {
-        return [(Vue.openBlock(true), Vue.createBlock(Vue.Fragment, null, Vue.renderList($props.enumOptions, function (item, index) {
-          return Vue.openBlock(), Vue.createBlock(_component_el_option, {
+    return vue.openBlock(), vue.createBlock(_component_el_select, _ctx.$attrs, {
+      default: vue.withCtx(function () {
+        return [(vue.openBlock(true), vue.createBlock(vue.Fragment, null, vue.renderList($props.enumOptions, function (item, index) {
+          return vue.openBlock(), vue.createBlock(_component_el_option, {
             key: index,
             label: item.label,
             value: item.value
@@ -11552,7 +11605,7 @@
             isRange = _ref2.isRange,
             otherProps = _objectWithoutProperties(_ref2, ["isNumberValue", "isRange"]);
 
-        return Vue.h(resolveComponent('el-date-picker'), _objectSpread2(_objectSpread2({
+        return vue.h(resolveComponent('el-date-picker'), _objectSpread2(_objectSpread2({
           type: isRange ? 'daterange' : 'date'
         }, otherProps), {}, {
           'onUpdate:modelValue': function onUpdateModelValue(val) {
@@ -11596,7 +11649,7 @@
             isRange = _ref2.isRange,
             otherProps = _objectWithoutProperties(_ref2, ["isNumberValue", "isRange"]);
 
-        return Vue.h(resolveComponent('el-date-picker'), _objectSpread2(_objectSpread2({
+        return vue.h(resolveComponent('el-date-picker'), _objectSpread2(_objectSpread2({
           type: isRange ? 'datetimerange' : 'datetime'
         }, otherProps), {}, {
           'onUpdate:modelValue': function onUpdateModelValue(val) {
@@ -11654,11 +11707,11 @@
       var attrs = _ref.attrs,
           slots = _ref.slots;
       // hack element plus timePicker 变为object类型
-      var originValue = Vue.ref(formatTimeObj(props.modelValue)); // 不需要响应式
+      var originValue = vue.ref(formatTimeObj(props.modelValue)); // 不需要响应式
 
       var formatValue = props.modelValue; // 如果外部修改了值
 
-      Vue.watch(function () {
+      vue.watch(function () {
         return props.modelValue;
       }, function (newVal) {
         if (newVal !== formatValue) {
@@ -11667,7 +11720,7 @@
         }
       });
       return function () {
-        return Vue.h(resolveComponent('el-time-picker'), _objectSpread2(_objectSpread2({}, attrs), {}, {
+        return vue.h(resolveComponent('el-time-picker'), _objectSpread2(_objectSpread2({}, attrs), {}, {
           modelValue: originValue.value,
           'onUpdate:modelValue': function onUpdateModelValue(val) {
             originValue.value = val; // 更新并缓存内部 timeStr
@@ -11714,46 +11767,53 @@
       // 设置默认 fileList
       var curModelValue = props.modelValue;
       var isArrayValue = Array.isArray(curModelValue);
-      var defaultFileList = attrs.fileList; // 优先使用 fileList 参数，否则使用 value 计算
 
-      if (!defaultFileList || defaultFileList.length === 0) {
-        defaultFileList = isArrayValue ? curModelValue.map(function (item, index) {
-          return {
-            name: "\u5DF2\u4E0A\u4F20\u6587\u4EF6\uFF08".concat(index + 1, "\uFF09"),
-            url: item
-          };
-        }) : [{
-          name: '已上传文件',
-          url: curModelValue
-        }];
-      } // fileList
+      var defaultFileList = attrs.fileList || function () {
+        if (isArrayValue) {
+          return curModelValue.map(function (item, index) {
+            return {
+              name: "\u5DF2\u4E0A\u4F20\u6587\u4EF6\uFF08".concat(index + 1, "\uFF09"),
+              url: item
+            };
+          });
+        }
+
+        if (curModelValue) {
+          return [{
+            name: '已上传文件',
+            url: curModelValue
+          }];
+        }
+
+        return [];
+      }(); // fileList
 
 
-      var fileListRef = Vue.ref(defaultFileList);
+      var fileListRef = vue.ref(defaultFileList);
+
+      var getUrl = function getUrl(fileItem) {
+        return fileItem && (fileItem.response && props.responseFileUrl(fileItem.response) || fileItem.url) || '';
+      };
 
       var emitValue = function emitValue(emitFileList) {
         // v-model
         var curValue;
 
-        var geUrl = function geUrl(fileItem) {
-          return fileItem && (fileItem.response && props.responseFileUrl(fileItem.response) || fileItem.url) || '';
-        };
-
         if (isArrayValue) {
           curValue = emitFileList.length ? emitFileList.reduce(function (pre, item) {
-            var url = geUrl(item);
+            var url = getUrl(item);
             if (url) pre.push(url);
             return pre;
           }, []) : [];
         } else {
           var fileItem = emitFileList[emitFileList.length - 1];
-          curValue = geUrl(fileItem);
+          curValue = getUrl(fileItem);
         }
 
         emit('update:modelValue', curValue);
       };
 
-      var globalProperties = Vue.getCurrentInstance().appContext.config.globalProperties;
+      var globalProperties = vue.getCurrentInstance().appContext.config.globalProperties;
       return function () {
         var data = _objectSpread2(_objectSpread2({
           fileList: fileListRef.value,
@@ -11766,6 +11826,10 @@
             if (globalProperties.$message) {
               globalProperties.$message.error('文件上传失败');
             }
+          },
+          'on-preview': function onPreview(file) {
+            var url = getUrl(file);
+            if (url) openNewPage(url);
           }
         }, attrs), {}, {
           'on-remove': function onRemove(file, fileList) {
@@ -11788,7 +11852,7 @@
 
         var childVNode = _objectSpread2({
           default: function _default() {
-            return Vue.h(resolveComponent('el-button'), {
+            return vue.h(resolveComponent('el-button'), {
               type: 'primary'
             }, {
               default: function _default() {
@@ -11798,7 +11862,7 @@
           }
         }, props.slots || {});
 
-        return Vue.h(resolveComponent('el-upload'), data, childVNode);
+        return vue.h(resolveComponent('el-upload'), data, childVNode);
       };
     }
   };
@@ -11855,15 +11919,15 @@
   var globalOptions = {
     WIDGET_MAP: WIDGET_MAP,
     COMPONENT_MAP: {
-      form: Vue.defineComponent({
+      form: vue.defineComponent({
         inheritAttrs: false,
         setup: function setup(props, _ref) {
           var attrs = _ref.attrs,
               slots = _ref.slots;
-          var formRef = Vue.ref(null);
+          var formRef = vue.ref(null);
 
           if (attrs.setFormRef) {
-            Vue.onMounted(function () {
+            vue.onMounted(function () {
               attrs.setFormRef(formRef.value);
             });
           }
@@ -11873,7 +11937,7 @@
             attrs.setFormRef;
                 var otherAttrs = _objectWithoutProperties(attrs, ["setFormRef"]);
 
-            return Vue.h(resolveComponent('el-form'), _objectSpread2({
+            return vue.h(resolveComponent('el-form'), _objectSpread2({
               ref: formRef
             }, otherAttrs), slots);
           };

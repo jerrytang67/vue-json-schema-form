@@ -1,5 +1,5 @@
 /** @license @lljj/vue3-form-element (c) 2020-2021 Liu.Jun License: Apache-2.0 */
-import { resolveComponent as resolveComponent$1, h, openBlock, createBlock, toDisplayString, createCommentVNode, createVNode, renderSlot, computed, ref as ref$1, watch, toRaw, getCurrentInstance, withCtx, Fragment, renderList, createTextVNode, defineComponent, onMounted } from 'vue';
+import { resolveComponent as resolveComponent$1, h, openBlock, createBlock, toDisplayString, createCommentVNode, createVNode, renderSlot, inject, computed, ref as ref$1, watch, toRaw, getCurrentInstance, provide, withCtx, Fragment, renderList, createTextVNode, defineComponent, onMounted } from 'vue';
 
 function _typeof(obj) {
   "@babel/helpers - typeof";
@@ -214,7 +214,8 @@ function _toPropertyKey(arg) {
 /**
  * Created by Liu.Jun on 2020/4/25 14:45.
  */
-
+// import Vue from 'vue';
+// 内部使用 . ，配置数据key不能出现.
 var pathSeparator = '.'; // nodePath 转css类名
 
 function nodePath2ClassName(path) {
@@ -565,6 +566,17 @@ function gcd(a, b) {
 
 function scm(a, b) {
   return a * b / gcd(a, b);
+} // 打开新页面
+
+function openNewPage(url) {
+  var target = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '_blank';
+  var a = document.createElement('a');
+  a.style.display = 'none';
+  a.target = target;
+  a.href = url;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 // $ref 引用
@@ -8565,6 +8577,8 @@ function getUiOptions(_ref5) {
   var spec = {};
 
   if (containsSpec) {
+    spec.readonly = !!schema.readOnly;
+
     if (undefined !== schema.multipleOf) {
       // 组件计数器步长
       spec.step = schema.multipleOf;
@@ -8601,7 +8615,9 @@ function getUiOptions(_ref5) {
 
 
   return _objectSpread2(_objectSpread2({
-    title: schema.title,
+    title: schema.title
+    /* || curNodePath.split('.').pop() */
+    ,
     // 默认使用 schema 的配置
     description: schema.description
   }, spec), getUserUiOptions({
@@ -8843,6 +8859,17 @@ function optionsList(schema, uiSchema, curNodePath, rootFormData) {
     };
   });
 }
+function fallbackLabel(oriLabel, isFallback, curNodePath) {
+  if (oriLabel) return oriLabel;
+
+  if (isFallback) {
+    var backLabel = curNodePath.split('.').pop(); // 过滤纯数字字符串
+
+    if (backLabel && backLabel !== "".concat(Number(backLabel))) return backLabel;
+  }
+
+  return '';
+}
 
 var formUtils = /*#__PURE__*/Object.freeze({
   __proto__: null,
@@ -8860,7 +8887,8 @@ var formUtils = /*#__PURE__*/Object.freeze({
   isFixedItems: isFixedItems,
   isMultiSelect: isMultiSelect,
   allowAdditionalItems: allowAdditionalItems,
-  optionsList: optionsList
+  optionsList: optionsList,
+  fallbackLabel: fallbackLabel
 });
 
 var ajv$1 = createAjvInstance();
@@ -9087,7 +9115,7 @@ function getMatchingOption(formData, options, rootSchema) {
 
   // eslint-disable-next-line no-plusplus
   for (var i = 0; i < options.length; i++) {
-    var option = options[i]; // If the schema describes an object then we need to add slightly more
+    var option = retrieveSchema(options[i], rootSchema, formData); // If the schema describes an object then we need to add slightly more
     // strict matching to the schema, because unless the schema uses the
     // "requires" keyword, an object will match the schema as long as it
     // doesn't have matching keys with a conflicting type. To do this we use an
@@ -9230,7 +9258,7 @@ function computeDefaults(_schema, parentDefaults, rootSchema) {
       return computeDefaults(itemSchema, Array.isArray(parentDefaults) ? parentDefaults[idx] : undefined, rootSchema, formData, includeUndefinedValues);
     });
   } else if ('oneOf' in schema) {
-    var matchSchema = schema.oneOf[getMatchingOption(formData, schema.oneOf, rootSchema)];
+    var matchSchema = retrieveSchema(schema.oneOf[getMatchingOption(formData, schema.oneOf, rootSchema)], rootSchema, formData);
 
     if (schema.properties && matchSchema.properties) {
       // 对象 oneOf 需要合并原属性和 oneOf 属性
@@ -9241,7 +9269,7 @@ function computeDefaults(_schema, parentDefaults, rootSchema) {
       schema = matchSchema;
     }
   } else if ('anyOf' in schema) {
-    var _matchSchema = schema.anyOf[getMatchingOption(formData, schema.anyOf, rootSchema)];
+    var _matchSchema = retrieveSchema(schema.anyOf[getMatchingOption(formData, schema.anyOf, rootSchema)], rootSchema, formData);
 
     if (schema.properties && _matchSchema.properties) {
       // 对象 anyOf 需要合并原属性和 anyOf 属性
@@ -9396,6 +9424,10 @@ var vueProps = {
     },
     required: true
   },
+  fallbackLabel: {
+    type: Boolean,
+    default: false
+  },
   formProps: {
     type: Object,
     default: function _default() {
@@ -9500,14 +9532,86 @@ var FormFooter = {
   }
 };
 
+var script = {
+  name: 'FieldGroupWrap',
+  inject: ['$genFormProvide'],
+  props: {
+    // 当前节点路径
+    curNodePath: {
+      type: String,
+      default: ''
+    },
+    showTitle: {
+      type: Boolean,
+      default: true
+    },
+    showDescription: {
+      type: Boolean,
+      default: true
+    },
+    title: {
+      type: String,
+      default: ''
+    },
+    description: {
+      type: String,
+      default: ''
+    }
+  },
+  computed: {
+    genFormProvide: function genFormProvide() {
+      // vue3/vue2 响应式provide
+      // 实现方式差异如下：
+      // provide vue3 computed 直接为响应式数据
+      // provide vue2 需要计算属性访问原始值
+      return typeof this.$genFormProvide === 'function' ? this.$genFormProvide() : this.$genFormProvide.value;
+    },
+    trueTitle: function trueTitle() {
+      var title = this.title;
+
+      if (title) {
+        return title;
+      }
+
+      debugger;
+      var genFormProvide = this.genFormProvide;
+      var backTitle = genFormProvide.fallbackLabel && this.curNodePath.split('.').pop();
+      if (backTitle !== "".concat(Number(backTitle))) return backTitle;
+      return '';
+    }
+  }
+};
+
+var _hoisted_1 = {
+  class: "fieldGroupWrap"
+};
+var _hoisted_2 = {
+  key: 0,
+  class: "fieldGroupWrap_title"
+};
+var _hoisted_3 = {
+  class: "fieldGroupWrap_box"
+};
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return openBlock(), createBlock("div", _hoisted_1, [$props.showTitle && $options.trueTitle ? (openBlock(), createBlock("h3", _hoisted_2, toDisplayString($options.trueTitle), 1
+  /* TEXT */
+  )) : createCommentVNode("v-if", true), $props.showDescription && $props.description ? (openBlock(), createBlock("p", {
+    key: 1,
+    class: "fieldGroupWrap_des",
+    innerHTML: $props.description
+  }, null, 8
+  /* PROPS */
+  , ["innerHTML"])) : createCommentVNode("v-if", true), createVNode("div", _hoisted_3, [renderSlot(_ctx.$slots, "default")])]);
+}
+
+script.render = render;
+script.__file = "utils/components/FieldGroupWrap.vue";
+
 /**
  * Created by Liu.Jun on 2020/4/22 18:58.
  */
 // 递归参数，统一props
 var vueProps$1 = {
-  formProps: {
-    type: null
-  },
   // 全局的配置，用于 初始化差异，适配不同的ui框架
   globalOptions: {
     type: null
@@ -9528,18 +9632,6 @@ var vueProps$1 = {
   },
   // 当前节点Error Schema
   errorSchema: {
-    type: Object,
-    default: function _default() {
-      return {};
-    }
-  },
-  // 自定义校验
-  customRule: {
-    type: Function,
-    default: null
-  },
-  // 自定义校验规则
-  customFormats: {
     type: Object,
     default: function _default() {
       return {};
@@ -9576,53 +9668,6 @@ var vueProps$1 = {
     default: true
   }
 };
-
-var script = {
-  name: 'FieldGroupWrap',
-  props: {
-    showTitle: {
-      type: Boolean,
-      default: true
-    },
-    showDescription: {
-      type: Boolean,
-      default: true
-    },
-    title: {
-      type: String,
-      default: ''
-    },
-    description: {
-      type: String,
-      default: ''
-    }
-  }
-};
-
-var _hoisted_1 = {
-  class: "fieldGroupWrap"
-};
-var _hoisted_2 = {
-  key: 0,
-  class: "fieldGroupWrap_title"
-};
-var _hoisted_3 = {
-  class: "fieldGroupWrap_box"
-};
-function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return openBlock(), createBlock("div", _hoisted_1, [$props.showTitle && $props.title ? (openBlock(), createBlock("h3", _hoisted_2, toDisplayString($props.title), 1
-  /* TEXT */
-  )) : createCommentVNode("v-if", true), $props.showDescription && $props.description ? (openBlock(), createBlock("p", {
-    key: 1,
-    class: "fieldGroupWrap_des",
-    innerHTML: $props.description
-  }, null, 8
-  /* PROPS */
-  , ["innerHTML"])) : createCommentVNode("v-if", true), createVNode("div", _hoisted_3, [renderSlot(_ctx.$slots, "default")])]);
-}
-
-script.render = render;
-script.__file = "vue3-core/src/components/FieldGroupWrap.vue";
 
 var _hoisted_1$1 = {
   class: "genFormIcon genFormIcon-down",
@@ -9671,7 +9716,7 @@ var _hoisted_1$3 = {
 };
 
 var _hoisted_2$3 = /*#__PURE__*/createVNode("path", {
-  d: "M563.8 512l262.5-312.9c4.4-5.2.7-13.1-6.1-13.1h-79.8c-4.7 0-9.2 2.1-12.3 5.7L511.6 449.8 295.1\n            191.7c-3-3.6-7.5-5.7-12.3-5.7H203c-6.8 0-10.5 7.9-6.1 13.1L459.4 512 196.9 824.9A7.95 7.95 0\n            0 0 203 838h79.8c4.7 0 9.2-2.1 12.3-5.7l216.5-258.1 216.5 258.1c3 3.6 7.5 5.7 12.3 5.7h79.8c6.8 0 10.5-7.9 6.1-13.1L563.8 512z"
+  d: "M563.8 512l262.5-312.9c4.4-5.2.7-13.1-6.1-13.1h-79.8c-4.7 0-9.2 2.1-12.3 5.7L511.6 449.8 295.1\r\n            191.7c-3-3.6-7.5-5.7-12.3-5.7H203c-6.8 0-10.5 7.9-6.1 13.1L459.4 512 196.9 824.9A7.95 7.95 0\r\n            0 0 203 838h79.8c4.7 0 9.2-2.1 12.3-5.7l216.5-258.1 216.5 258.1c3 3.6 7.5 5.7 12.3 5.7h79.8c6.8 0 10.5-7.9 6.1-13.1L563.8 512z"
 }, null, -1
 /* HOISTED */
 );
@@ -9725,7 +9770,7 @@ var _hoisted_1$5 = {
 };
 
 var _hoisted_2$5 = /*#__PURE__*/createVNode("path", {
-  d: "M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 708c-22.1\n            0-40-17.9-40-40s17.9-40 40-40 40 17.9 40 40-17.9 40-40 40zm62.9-219.5a48.3 48.3 0 0\n            0-30.9 44.8V620c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8v-21.5c0-23.1 6.7-45.9 19.9-64.9 12.9-18.6 30.9-32.8\n            52.1-40.9 34-13.1 56-41.6 56-72.7 0-44.1-43.1-80-96-80s-96 35.9-96 80v7.6c0 4.4-3.6\n            8-8 8h-48c-4.4 0-8-3.6-8-8V420c0-39.3 17.2-76 48.4-103.3C430.4 290.4 470 276 512 276s81.6 14.5 111.6\n            40.7C654.8 344 672 380.7 672 420c0 57.8-38.1 109.8-97.1 132.5z"
+  d: "M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 708c-22.1\r\n            0-40-17.9-40-40s17.9-40 40-40 40 17.9 40 40-17.9 40-40 40zm62.9-219.5a48.3 48.3 0 0\r\n            0-30.9 44.8V620c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8v-21.5c0-23.1 6.7-45.9 19.9-64.9 12.9-18.6 30.9-32.8\r\n            52.1-40.9 34-13.1 56-41.6 56-72.7 0-44.1-43.1-80-96-80s-96 35.9-96 80v7.6c0 4.4-3.6\r\n            8-8 8h-48c-4.4 0-8-3.6-8-8V420c0-39.3 17.2-76 48.4-103.3C430.4 290.4 470 276 512 276s81.6 14.5 111.6\r\n            40.7C654.8 344 672 380.7 672 420c0 57.8-38.1 109.8-97.1 132.5z"
 }, null, -1
 /* HOISTED */
 );
@@ -9769,17 +9814,6 @@ var Widget = {
       default: function _default() {
         return {};
       }
-    },
-    customFormats: {
-      type: Object,
-      default: function _default() {
-        return {};
-      }
-    },
-    // 自定义校验
-    customRule: {
-      type: Function,
-      default: null
     },
     widget: {
       type: [String, Function, Object],
@@ -9868,15 +9902,15 @@ var Widget = {
         return {};
       }
     },
-    formProps: null,
     getWidget: null,
     globalOptions: null // 全局配置
 
   },
   emits: ['change'],
-  inheritAttrs: true,
+  // inheritAttrs: false,
   setup: function setup(props, _ref) {
     var emit = _ref.emit;
+    var genFormProvide = inject('$genFormProvide');
     var widgetValue = computed({
       get: function get() {
         if (props.isFormData) return getPathVal(props.rootFormData, props.curNodePath);
@@ -9913,9 +9947,15 @@ var Widget = {
     }
 
     return function () {
-      // 判断是否为根节点
+      // inject
+      var _genFormProvide$value = genFormProvide.value,
+          fallbackLabel$1 = _genFormProvide$value.fallbackLabel,
+          formProps = _genFormProvide$value.formProps,
+          customFormats = _genFormProvide$value.customFormats,
+          customRule = _genFormProvide$value.customRule; // 判断是否为根节点
+
       var isRootNode = isRootNodePath(props.curNodePath);
-      var miniDesModel = props.globalOptions.HELPERS.isMiniDes(props.formProps);
+      var miniDesModel = props.globalOptions.HELPERS.isMiniDes(formProps);
       var descriptionVNode = props.description ? h('div', {
         innerHTML: props.description,
         class: {
@@ -9944,7 +9984,10 @@ var Widget = {
         width: props.width,
         flexBasis: props.width,
         paddingRight: '10px'
-      } : {});
+      } : {}); // 运行配置回退到 属性名
+
+
+      var _label = fallbackLabel(props.label, props.widget && fallbackLabel$1, props.curNodePath);
 
       return h(resolveComponent(COMPONENT_MAP.formItem), _objectSpread2(_objectSpread2(_objectSpread2({
         class: _objectSpread2(_objectSpread2({}, props.fieldClass), {}, {
@@ -9964,7 +10007,7 @@ var Widget = {
               formData: value,
               schema: props.schema,
               uiSchema: props.uiSchema,
-              customFormats: props.customFormats,
+              customFormats: customFormats,
               errorSchema: props.errorSchema,
               required: props.required,
               propPath: path2prop(props.curNodePath)
@@ -9976,10 +10019,8 @@ var Widget = {
             } // customRule 如果存在自定义校验
 
 
-            var curCustomRule = props.customRule;
-
-            if (curCustomRule && typeof curCustomRule === 'function') {
-              return curCustomRule({
+            if (customRule && typeof customRule === 'function') {
+              return customRule({
                 field: props.curNodePath,
                 value: value,
                 rootFormData: props.rootFormData,
@@ -10003,14 +10044,14 @@ var Widget = {
             title: slotProps.error
           }, [slotProps.error]) : null;
         }
-      }, props.label ? {
+      }, _label ? {
         label: function label() {
           return h('span', {
             class: {
               genFormLabel: true,
               genFormItemRequired: props.required
             }
-          }, ["".concat(props.label)].concat(_toConsumableArray(miniDescriptionVNode ? [miniDescriptionVNode] : []), ["".concat(props.formProps && props.formProps.labelSuffix || '')]));
+          }, ["".concat(_label)].concat(_toConsumableArray(miniDescriptionVNode ? [miniDescriptionVNode] : []), ["".concat(formProps && formProps.labelSuffix || '')]));
         }
       } : {}), {}, {
         // default
@@ -10072,10 +10113,12 @@ var ObjectField = {
     };
 
     return function () {
+      var curNodePath = props.curNodePath;
+
       var _getUiOptions = getUiOptions({
         schema: props.schema,
         uiSchema: props.uiSchema,
-        curNodePath: props.curNodePath,
+        curNodePath: curNodePath,
         rootFormData: props.rootFormData
       }),
           title = _getUiOptions.title,
@@ -10106,7 +10149,7 @@ var ObjectField = {
           uiSchema: props.uiSchema[name],
           errorSchema: props.errorSchema[name],
           required: required || curDependent,
-          curNodePath: computedCurPath(props.curNodePath, name)
+          curNodePath: computedCurPath(curNodePath, name)
         }));
       });
       return h(script, _objectSpread2({
@@ -10114,6 +10157,7 @@ var ObjectField = {
         description: description,
         showTitle: showTitle,
         showDescription: showDescription,
+        curNodePath: curNodePath,
         class: _objectSpread2({}, fieldClass),
         style: fieldStyle
       }, fieldAttrs), {
@@ -10134,7 +10178,7 @@ var ObjectField = {
             }, {}),
             uiSchema: props.uiSchema,
             errorSchema: props.errorSchema,
-            curNodePath: props.curNodePath,
+            curNodePath: curNodePath,
             rootFormData: props.rootFormData,
             globalOptions: props.globalOptions
           })] : []));
@@ -10475,6 +10519,7 @@ var ArrayFieldNormal = {
         description: description,
         showTitle: showTitle,
         showDescription: showDescription,
+        curNodePath: curNodePath,
         class: fieldClass,
         attrs: fieldAttrs,
         style: fieldStyle
@@ -10642,7 +10687,8 @@ var ArrayFieldTuple = {
         title: title,
         description: description,
         showTitle: showTitle,
-        showDescription: showDescription
+        showDescription: showDescription,
+        curNodePath: curNodePath
       }, fieldAttrs), {}, {
         class: fieldClass,
         style: fieldStyle
@@ -11231,8 +11277,21 @@ function createForm() {
         }); // 只注册一次
 
         Form.installed = true;
-      } // rootFormData
+      } // 使用provide 传递跨组件数据
 
+
+      var genFormProvide = computed(function () {
+        return {
+          fallbackLabel: props.fallbackLabel,
+          customFormats: props.customFormats,
+          customRule: props.customRule,
+          formProps: _objectSpread2({
+            labelPosition: 'top',
+            labelSuffix: '：'
+          }, props.formProps)
+        };
+      });
+      provide('$genFormProvide', genFormProvide); // rootFormData
 
       var rootFormData = ref$1(getDefaultFormState(props.schema, props.modelValue, props.schema));
       var footerParams = computed(function () {
@@ -11326,30 +11385,24 @@ function createForm() {
       return function () {
         var _class;
 
-        var _props$formProps = props.formProps,
-            _props$formProps$layo = _props$formProps.layoutColumn,
-            layoutColumn = _props$formProps$layo === void 0 ? 1 : _props$formProps$layo,
-            inlineFooter = _props$formProps.inlineFooter,
-            inline = _props$formProps.inline,
-            otherFormProps = _objectWithoutProperties(_props$formProps, ["layoutColumn", "inlineFooter", "inline"]);
+        var _genFormProvide$value = genFormProvide.value.formProps,
+            _genFormProvide$value2 = _genFormProvide$value.layoutColumn,
+            layoutColumn = _genFormProvide$value2 === void 0 ? 1 : _genFormProvide$value2,
+            inlineFooter = _genFormProvide$value.inlineFooter,
+            inline = _genFormProvide$value.inline,
+            otherFormProps = _objectWithoutProperties(_genFormProvide$value, ["layoutColumn", "inlineFooter", "inline"]);
 
         var schemaProps = {
           schema: props.schema,
           uiSchema: props.uiSchema,
           errorSchema: props.errorSchema,
-          customFormats: props.customFormats,
-          customRule: props.customRule,
           rootSchema: props.schema,
           rootFormData: rootFormData.value,
           // 根节点的数据
           curNodePath: '',
           // 当前节点路径
-          globalOptions: globalOptions,
-          // 全局配置，差异化ui框架
-          formProps: _objectSpread2({
-            labelSuffix: '：',
-            labelPosition: 'top'
-          }, otherFormProps)
+          globalOptions: globalOptions // 全局配置，差异化ui框架
+
         };
         return h(resolveComponent(globalOptions.COMPONENT_MAP.form), _objectSpread2({
           class: (_class = {
@@ -11362,7 +11415,7 @@ function createForm() {
             emit('form-mounted', form);
           },
           model: rootFormData
-        }, schemaProps.formProps), {
+        }, otherFormProps), {
           default: function _default() {
             return [h(SchemaField, schemaProps), getDefaultSlot()];
           }
@@ -11710,40 +11763,47 @@ var UploadWidget = {
     // 设置默认 fileList
     var curModelValue = props.modelValue;
     var isArrayValue = Array.isArray(curModelValue);
-    var defaultFileList = attrs.fileList; // 优先使用 fileList 参数，否则使用 value 计算
 
-    if (!defaultFileList || defaultFileList.length === 0) {
-      defaultFileList = isArrayValue ? curModelValue.map(function (item, index) {
-        return {
-          name: "\u5DF2\u4E0A\u4F20\u6587\u4EF6\uFF08".concat(index + 1, "\uFF09"),
-          url: item
-        };
-      }) : [{
-        name: '已上传文件',
-        url: curModelValue
-      }];
-    } // fileList
+    var defaultFileList = attrs.fileList || function () {
+      if (isArrayValue) {
+        return curModelValue.map(function (item, index) {
+          return {
+            name: "\u5DF2\u4E0A\u4F20\u6587\u4EF6\uFF08".concat(index + 1, "\uFF09"),
+            url: item
+          };
+        });
+      }
+
+      if (curModelValue) {
+        return [{
+          name: '已上传文件',
+          url: curModelValue
+        }];
+      }
+
+      return [];
+    }(); // fileList
 
 
     var fileListRef = ref$1(defaultFileList);
+
+    var getUrl = function getUrl(fileItem) {
+      return fileItem && (fileItem.response && props.responseFileUrl(fileItem.response) || fileItem.url) || '';
+    };
 
     var emitValue = function emitValue(emitFileList) {
       // v-model
       var curValue;
 
-      var geUrl = function geUrl(fileItem) {
-        return fileItem && (fileItem.response && props.responseFileUrl(fileItem.response) || fileItem.url) || '';
-      };
-
       if (isArrayValue) {
         curValue = emitFileList.length ? emitFileList.reduce(function (pre, item) {
-          var url = geUrl(item);
+          var url = getUrl(item);
           if (url) pre.push(url);
           return pre;
         }, []) : [];
       } else {
         var fileItem = emitFileList[emitFileList.length - 1];
-        curValue = geUrl(fileItem);
+        curValue = getUrl(fileItem);
       }
 
       emit('update:modelValue', curValue);
@@ -11762,6 +11822,10 @@ var UploadWidget = {
           if (globalProperties.$message) {
             globalProperties.$message.error('文件上传失败');
           }
+        },
+        'on-preview': function onPreview(file) {
+          var url = getUrl(file);
+          if (url) openNewPage(url);
         }
       }, attrs), {}, {
         'on-remove': function onRemove(file, fileList) {

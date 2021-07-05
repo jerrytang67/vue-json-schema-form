@@ -65,7 +65,6 @@
                             :child-component-list="componentList"
                             :drag-options="dragOptions"
                             :form-data="rootFormData"
-                            :form-props="formProps"
                         >
                             <el-form-item
                                 v-if="componentList.length > 0 && formFooter.show"
@@ -167,6 +166,12 @@ export default {
         EditorHeader,
         NestedEditor
     },
+    provide() {
+        return {
+            // 处理为响应式
+            $genFormProvide: () => this.genFormProvide
+        };
+    },
     data() {
         return {
             closeToolbar: false,
@@ -191,6 +196,12 @@ export default {
         },
         formFooter() {
             return this.formConfig.formFooter || {};
+        },
+        genFormProvide() {
+            return {
+                formProps: this.formProps,
+                fallbackLabel: true
+            };
         },
         dragOptions() {
             return {

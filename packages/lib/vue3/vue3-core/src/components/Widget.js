@@ -3,12 +3,14 @@
  */
 
 import {
-    computed, h, ref, watch
+    computed, h, ref, watch, inject
 } from 'vue';
 
 import { IconQuestion } from '@lljj/vjsf-utils/icons';
 
 import { validateFormDataAndTransformMsg } from '@lljj/vjsf-utils/schema/validate';
+import { fallbackLabel as getFallbackLabel } from '@lljj/vjsf-utils/formUtils';
+
 import {
     isRootNodePath, path2prop, getPathVal, setPathVal, resolveComponent
 } from '@lljj/vjsf-utils/vue3Utils';
@@ -38,15 +40,6 @@ export default {
         errorSchema: {
             type: Object,
             default: () => ({})
-        },
-        customFormats: {
-            type: Object,
-            default: () => ({})
-        },
-        // 自定义校验
-        customRule: {
-            type: Function,
-            default: null
         },
         widget: {
             type: [String, Function, Object],
@@ -121,13 +114,13 @@ export default {
             type: Object,
             default: () => ({})
         },
-        formProps: null,
         getWidget: null,
         globalOptions: null // 全局配置
     },
     emits: ['change'],
-    inheritAttrs: true,
+    // inheritAttrs: false,
     setup(props, { emit }) {
+        const genFormProvide = inject('$genFormProvide');
         const widgetValue = computed({
             get() {
                 if (props.isFormData) return getPathVal(props.rootFormData, props.curNodePath);
@@ -168,10 +161,15 @@ export default {
         }
 
         return () => {
+            // inject
+            const {
+                fallbackLabel, formProps, customFormats, customRule
+            } = genFormProvide.value;
+
             // 判断是否为根节点
             const isRootNode = isRootNodePath(props.curNodePath);
 
-            const miniDesModel = props.globalOptions.HELPERS.isMiniDes(props.formProps);
+            const miniDesModel = props.globalOptions.HELPERS.isMiniDes(formProps);
 
             const descriptionVNode = (props.description) ? h(
                 'div',
@@ -207,6 +205,8 @@ export default {
                 } : {})
             };
 
+            // 运行配置回退到 属性名
+            const label = getFallbackLabel(props.label, (props.widget && fallbackLabel), props.curNodePath);
             return h(
                 resolveComponent(COMPONENT_MAP.formItem),
                 {
@@ -231,7 +231,7 @@ export default {
                                         formData: value,
                                         schema: props.schema,
                                         uiSchema: props.uiSchema,
-                                        customFormats: props.customFormats,
+                                        customFormats,
                                         errorSchema: props.errorSchema,
                                         required: props.required,
                                         propPath: path2prop(props.curNodePath)
@@ -244,9 +244,8 @@ export default {
                                     }
 
                                     // customRule 如果存在自定义校验
-                                    const curCustomRule = props.customRule;
-                                    if (curCustomRule && (typeof curCustomRule === 'function')) {
-                                        return curCustomRule({
+                                    if (customRule && (typeof customRule === 'function')) {
+                                        return customRule({
                                             field: props.curNodePath,
                                             value,
                                             rootFormData: props.rootFormData,
@@ -277,16 +276,16 @@ export default {
                         TODO:这里slot如果从无到有会导致无法正常渲染出元素 怀疑是vue3 bug
                         如果使用 error 的形式渲染，ElementPlus label labelWrap 未做判断，使用 slots.default?.() 会得到 undefined
                     */
-                    ...props.label ? {
+                    ...label ? {
                         label: () => h('span', {
                             class: {
                                 genFormLabel: true,
                                 genFormItemRequired: props.required,
                             },
                         }, [
-                            `${props.label}`,
+                            `${label}`,
                             ...miniDescriptionVNode ? [miniDescriptionVNode] : [],
-                            `${(props.formProps && props.formProps.labelSuffix) || ''}`
+                            `${(formProps && formProps.labelSuffix) || ''}`
                         ])
                     } : {},
 
