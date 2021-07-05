@@ -1,5 +1,5 @@
 {
-    "name": "@lljj/vue-json-schema-form",
+    "name": "@ttwork/vue-json-schema-form",
     "version": "1.2.3",
     "description": "基于 Vue 、ElementUi、JsonSchema快速构建一个带完整校验的form表单",
     "main": "dist/vueJsonSchemaForm.umd.min.js",
@@ -23,8 +23,8 @@
         "dist/*.js",
         "types/*.d.ts"
     ],
-    "repository": "https://github.com/lljj-x/vue-json-schema-form",
-    "homepage": "https://github.com/lljj-x/vue-json-schema-form",
+    "repository": "https://github.com/jerrytang67/vue-json-schema-form",
+    "homepage": "https://github.com/jerrytang67/vue-json-schema-form",
     "license": "Apache-2.0",
     "publishConfig": {
         "access": "public"
