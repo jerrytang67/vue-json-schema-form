@@ -1,5 +1,5 @@
 {
-    "name": "@lljj/vjsf-utils",
+    "name": "@ttwork/vjsf-utils",
     "version": "1.2.3",
     "description": "vue json schema form 使用的基础utils工具类",
     "private": false,
@@ -7,7 +7,7 @@
         "access": "public"
     },
     "keywords": [
-        "@lljj/vjsf-utils",
+        "@ttwork/vjsf-utils",
         "vue",
         "vuejs",
         "form",
@@ -16,8 +16,8 @@
     "dependencies": {
         "ajv": "^6.10.2"
     },
-    "repository": "https://github.com/lljj-x/vue-json-schema-form",
-    "homepage": "https://github.com/lljj-x/vue-json-schema-form",
+    "repository": "https://github.com/jerrytang67/vue-json-schema-form",
+    "homepage": "https://github.com/jerrytang67/vue-json-schema-form",
     "license": "Apache-2.0",
     "author": "Liu.Jun",
     "browserslist": [
