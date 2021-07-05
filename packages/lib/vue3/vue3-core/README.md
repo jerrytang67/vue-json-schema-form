@@ -1,9 +1,9 @@
-# @lljj/vue3-form-core
+# @ttwork/vue3-form-core
 vue3 版本核心，可以基于此适配不同的 vue3 ui库。
 
 适配的核心就是对应类型为自己的组件库，且处理默认 `props` 与自己组件库 props 之间的转换
 
-> 适配方案可参见 [@lljj/vue3-form-element](https://github.com/lljj-x/vue-json-schema-form/tree/master/packages/lib/vue3/vue3-form-element) 、[@lljj/vue3-form-ant](https://github.com/lljj-x/vue-json-schema-form/tree/master/packages/lib/vue3/vue3-form-ant)
+> 适配方案可参见 [@ttwork/vue3-form-element](https://github.com/lljj-x/vue-json-schema-form/tree/master/packages/lib/vue3/vue3-form-element) 、[@ttwork/vue3-form-ant](https://github.com/lljj-x/vue-json-schema-form/tree/master/packages/lib/vue3/vue3-form-ant)
 
 
 ## 兼容性
@@ -22,10 +22,10 @@ babel({
 
 ```ssh
 ## npm
-npm install --save @lljj/vue3-form-core
+npm install --save @ttwork/vue3-form-core
 
 ## yarn
-yarn add @lljj/vue3-form-core
+yarn add @ttwork/vue3-form-core
 ```
 
 ## 使用方法
@@ -33,7 +33,7 @@ yarn add @lljj/vue3-form-core
 按如下格式，配置对应组件在当前组件库中的映射关系，可以直接配置全局组件名或者组件构造函数，`默认组件 props 为elementUi格式，如果props格式不同需要中间组件来做转换`；
 
 ```js
-import createVue2Core from '@lljj/vue3-form-core';
+import createVue2Core from '@ttwork/vue3-form-core';
 
 const globalOptions = {
     // widget组件和现有组件库映射关系

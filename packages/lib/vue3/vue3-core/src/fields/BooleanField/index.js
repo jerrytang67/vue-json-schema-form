@@ -3,7 +3,7 @@
  */
 
 import { h } from 'vue';
-import { getWidgetConfig, optionsList } from '@lljj/vjsf-utils/formUtils';
+import { getWidgetConfig, optionsList } from '@ttwork/vjsf-utils/formUtils';
 
 import Widget from '../../components/Widget';
 import vueProps from '../props';

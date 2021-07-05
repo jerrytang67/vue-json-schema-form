@@ -6,14 +6,14 @@ import {
     h, ref, onMounted, defineComponent
 } from 'vue';
 
-import createVue3Core, { fieldProps, SchemaField } from '@lljj/vue3-form-core';
+import createVue3Core, { fieldProps, SchemaField } from '@ttwork/vue3-form-core';
 
 
-import i18n from '@lljj/vjsf-utils/i18n';
-import * as vueUtils from '@lljj/vjsf-utils/vue3Utils';
-import * as formUtils from '@lljj/vjsf-utils/formUtils';
-import * as schemaValidate from '@lljj/vjsf-utils/schema/validate';
-import getDefaultFormState from '@lljj/vjsf-utils/schema/getDefaultFormState';
+import i18n from '@ttwork/vjsf-utils/i18n';
+import * as vueUtils from '@ttwork/vjsf-utils/vue3Utils';
+import * as formUtils from '@ttwork/vjsf-utils/formUtils';
+import * as schemaValidate from '@ttwork/vjsf-utils/schema/validate';
+import getDefaultFormState from '@ttwork/vjsf-utils/schema/getDefaultFormState';
 import WIDGET_MAP from './config/widgets/WIDGET_MAP.js';
 
 import './style.css';

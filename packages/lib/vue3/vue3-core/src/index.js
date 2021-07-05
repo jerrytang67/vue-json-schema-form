@@ -6,14 +6,14 @@ import {
     getCurrentInstance, watch, ref, computed, h, provide
 } from 'vue';
 
-import { resolveComponent } from '@lljj/vjsf-utils/vue3Utils';
+import { resolveComponent } from '@ttwork/vjsf-utils/vue3Utils';
 
 // 生成form表单默认数据
-import getDefaultFormState from '@lljj/vjsf-utils/schema/getDefaultFormState';
-import { deepEquals } from '@lljj/vjsf-utils/utils';
+import getDefaultFormState from '@ttwork/vjsf-utils/schema/getDefaultFormState';
+import { deepEquals } from '@ttwork/vjsf-utils/utils';
 
 // 基础公共样式
-import '@lljj/vjsf-utils/style/baseForm.css';
+import '@ttwork/vjsf-utils/style/baseForm.css';
 
 import vueProps from './props';
 

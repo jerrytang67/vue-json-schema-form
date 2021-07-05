@@ -1,17 +1,17 @@
-# @lljj/vue3-form-element
+# @ttwork/vue3-form-element
 
 基于 [Element Plus](https://element-plus.org/) 、Vue3、 [JSON Schema](https://json-schema.org/understanding-json-schema/index.html) 生成表单
 
-> 通过 [@lljj/vue3-form-core](https://github.com/lljj-x/vue-json-schema-form/tree/master/packages/lib/vue3/vue3-core) 适配 ElementPlus 库
+> 通过 [@ttwork/vue3-form-core](https://github.com/lljj-x/vue-json-schema-form/tree/master/packages/lib/vue3/vue3-core) 适配 ElementPlus 库
 
 ## 安装
 
 ```ssh
 ## npm
-npm install --save @lljj/vue3-form-element
+npm install --save @ttwork/vue3-form-element
 
 ## yarn
-yarn add @lljj/vue3-form-element
+yarn add @ttwork/vue3-form-element
 ```
 
 ## 使用
@@ -25,7 +25,7 @@ yarn add @lljj/vue3-form-element
 
 ```js
 //  使用
-import VueForm from '@lljj/vue3-form-element';
+import VueForm from '@ttwork/vue3-form-element';
 
 export default {
     name: 'Demo',

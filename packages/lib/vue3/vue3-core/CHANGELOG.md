@@ -13,7 +13,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [1.2.3](https://github.com/lljj-x/vue-json-schema-form/compare/v1.2.1...v1.2.3) (2021-07-05)
 
-**Note:** Version bump only for package @lljj/vue3-form-core
+**Note:** Version bump only for package @ttwork/vue3-form-core
 
 
 
@@ -22,7 +22,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [1.2.1](https://github.com/lljj-x/vue-json-schema-form/compare/v1.2.0...v1.2.1) (2021-04-11)
 
-**Note:** Version bump only for package @lljj/vue3-form-core
+**Note:** Version bump only for package @ttwork/vue3-form-core
 
 
 
@@ -41,7 +41,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [1.1.3](https://github.com/lljj-x/vue-json-schema-form/compare/v1.1.2...v1.1.3) (2021-03-18)
 
-**Note:** Version bump only for package @lljj/vue3-form-core
+**Note:** Version bump only for package @ttwork/vue3-form-core
 
 
 
@@ -82,7 +82,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [0.6.1](https://github.com/lljj-x/vue-json-schema-form/compare/v0.6.0...v0.6.1) (2021-01-19)
 
-**Note:** Version bump only for package @lljj/vue3-form-core
+**Note:** Version bump only for package @ttwork/vue3-form-core
 
 
 
@@ -90,4 +90,4 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 # [0.6.0](https://github.com/lljj-x/vue-json-schema-form/compare/v0.5.0...v0.6.0) (2021-01-19)
 
-**Note:** Version bump only for package @lljj/vue3-form-core
+**Note:** Version bump only for package @ttwork/vue3-form-core

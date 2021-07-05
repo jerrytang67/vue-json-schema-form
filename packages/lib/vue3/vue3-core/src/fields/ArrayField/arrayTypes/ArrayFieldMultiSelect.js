@@ -6,8 +6,8 @@ import { h } from 'vue';
 
 import {
     getWidgetConfig, optionsList
-} from '@lljj/vjsf-utils/formUtils';
-import retrieveSchema from '@lljj/vjsf-utils/schema/retriev';
+} from '@ttwork/vjsf-utils/formUtils';
+import retrieveSchema from '@ttwork/vjsf-utils/schema/retriev';
 import vueProps from '../../props';
 
 import Widget from '../../../components/Widget';

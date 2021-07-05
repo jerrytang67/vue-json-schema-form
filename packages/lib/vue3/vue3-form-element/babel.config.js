@@ -1,3 +1,3 @@
 module.exports = {
-    presets: ['@lljj/babel-preset']
+    presets: ['@ttwork/babel-preset']
 };

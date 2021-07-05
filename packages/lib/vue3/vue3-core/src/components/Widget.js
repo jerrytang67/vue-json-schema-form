@@ -6,14 +6,14 @@ import {
     computed, h, ref, watch, inject
 } from 'vue';
 
-import { IconQuestion } from '@lljj/vjsf-utils/icons';
+import { IconQuestion } from '@ttwork/vjsf-utils/icons';
 
-import { validateFormDataAndTransformMsg } from '@lljj/vjsf-utils/schema/validate';
-import { fallbackLabel as getFallbackLabel } from '@lljj/vjsf-utils/formUtils';
+import { validateFormDataAndTransformMsg } from '@ttwork/vjsf-utils/schema/validate';
+import { fallbackLabel as getFallbackLabel } from '@ttwork/vjsf-utils/formUtils';
 
 import {
     isRootNodePath, path2prop, getPathVal, setPathVal, resolveComponent
-} from '@lljj/vjsf-utils/vue3Utils';
+} from '@ttwork/vjsf-utils/vue3Utils';
 
 export default {
     name: 'Widget',

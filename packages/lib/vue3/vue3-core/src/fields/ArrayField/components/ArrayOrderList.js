@@ -4,7 +4,7 @@
 
 import {
     IconCaretUp, IconCaretDown, IconClose, IconPlus
-} from '@lljj/vjsf-utils/icons';
+} from '@ttwork/vjsf-utils/icons';
 import { h, computed } from 'vue';
 
 // 支持数字排序 ，新增 ，删除等操作

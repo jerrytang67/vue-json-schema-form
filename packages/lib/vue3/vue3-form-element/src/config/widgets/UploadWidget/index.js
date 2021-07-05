@@ -3,8 +3,8 @@
  */
 
 import { h, ref, getCurrentInstance } from 'vue';
-import { resolveComponent } from '@lljj/vjsf-utils/vue3Utils';
-import { openNewPage } from '@lljj/vjsf-utils/utils';
+import { resolveComponent } from '@ttwork/vjsf-utils/vue3Utils';
+import { openNewPage } from '@ttwork/vjsf-utils/utils';
 
 // mock
 // https://run.mocky.io/v3/518d7af7-204f-45ab-9628-a6e121dab8ca
