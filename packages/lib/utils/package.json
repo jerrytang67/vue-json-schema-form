@@ -1,6 +1,6 @@
 {
     "name": "@ttwork/vjsf-utils",
-    "version": "1.4.12",
+    "version": "1.4.13",
     "description": "vue json schema form 使用的基础utils工具类",
     "private": false,
     "publishConfig": {
