@@ -5,22 +5,22 @@
 // import Vue from 'vue';
 
 // 内部使用 . ，配置数据key不能出现.
-const pathSeparator = '.';
+const pathSeparator = ".";
 
 // nodePath 转css类名
 export function nodePath2ClassName(path) {
-    const rootPathName = '__pathRoot';
-    return path ? `${rootPathName}.${path}`.replace(/\./g, '_') : rootPathName;
+    const rootPathName = "__pathRoot";
+    return path ? `${rootPathName}.${path}`.replace(/\./g, "_") : rootPathName;
 }
 
 // 是否为根节点
 export function isRootNodePath(path) {
-    return path === '';
+    return path === "";
 }
 
 // 计算当前节点path
 export function computedCurPath(prePath, curKey) {
-    return prePath === '' ? curKey : [prePath, curKey].join(pathSeparator);
+    return prePath === "" ? curKey : [prePath, curKey].join(pathSeparator);
 }
 
 // 删除当前path值
@@ -51,7 +51,7 @@ export function getPathVal(obj, path, leftDeviation = 0) {
     for (let i = 0; i < pathArr.length - leftDeviation; i += 1) {
         // 错误路径或者undefined中断查找
         if (obj === undefined) return undefined;
-        obj = pathArr[i] === '' ? obj : obj[pathArr[i]];
+        obj = pathArr[i] === "" ? obj : obj[pathArr[i]] || undefined;
     }
     return obj;
 }
