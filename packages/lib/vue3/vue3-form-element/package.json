@@ -1,6 +1,6 @@
 {
     "name": "@ttwork/vue3-form-element",
-    "version": "1.4.4",
+    "version": "1.4.5",
     "description": "基于 Vue3 、ElementPlus、JsonSchema快速构建一个带完整校验的form表单",
     "main": "dist/vue3-form-element.umd.min.js",
     "module": "dist/vue3-form-element.esm.min.js",
@@ -15,8 +15,8 @@
         "jsonSchema"
     ],
     "dependencies": {
-        "@ttwork/vjsf-utils": "1.4.4",
-        "@ttwork/vue3-form-core": "1.4.4"
+        "@ttwork/vjsf-utils": "1.4.5",
+        "@ttwork/vue3-form-core": "1.4.5"
     },
     "typings": "types/index.d.ts",
     "files": [
