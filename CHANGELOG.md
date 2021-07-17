@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.9](https://github.com/jerrytang67/vue-json-schema-form/compare/v1.4.5...v1.4.9) (2021-07-17)
+
+**Note:** Version bump only for package vue-json-schema-form
+
+
+
+
+
 ## [1.4.5](https://github.com/jerrytang67/vue-json-schema-form/compare/v1.4.4...v1.4.5) (2021-07-17)
 
 **Note:** Version bump only for package vue-json-schema-form
