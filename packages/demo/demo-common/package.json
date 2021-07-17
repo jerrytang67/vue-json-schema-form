@@ -1,6 +1,6 @@
 {
     "name": "demo-common",
-    "version": "1.4.11",
+    "version": "1.4.12",
     "description": "vue json schema form demo公共代码",
     "keywords": [
         "@lljj/vjsf-utils",
