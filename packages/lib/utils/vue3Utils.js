@@ -2,14 +2,18 @@
  * Created by Liu.Jun on 2020/4/25 14:45.
  */
 
-import { resolveComponent as _resolveComponent } from 'vue';
+import { resolveComponent as _resolveComponent } from "vue";
 
 export {
-    nodePath2ClassName, isRootNodePath, computedCurPath, getPathVal, path2prop
-} from './vueUtils';
+    nodePath2ClassName,
+    isRootNodePath,
+    computedCurPath,
+    getPathVal,
+    path2prop
+} from "./vueUtils.js";
 
 // 内部使用 . ，配置数据key不能出现.
-const pathSeparator = '.';
+const pathSeparator = ".";
 
 // 删除当前path值
 export function deletePathVal(vueData, name) {
@@ -30,7 +34,7 @@ export function setPathVal(obj, path, value) {
 }
 
 export function resolveComponent(component) {
-    if (typeof component === 'string') return _resolveComponent(component);
+    if (typeof component === "string") return _resolveComponent(component);
 
     return component;
 }

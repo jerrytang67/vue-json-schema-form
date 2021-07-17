@@ -58,7 +58,6 @@ export default {
             if (title) {
                 return title;
             }
-            debugger;
             const genFormProvide = this.genFormProvide;
 
             const backTitle = genFormProvide.fallbackLabel && this.curNodePath.split('.').pop();

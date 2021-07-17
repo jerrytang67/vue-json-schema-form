@@ -13,7 +13,7 @@ npm 包直接为 es6+ 源码，需要在构建 lib 时通过babe转义
 
 ```js
 babel({
-    exclude: /node_modules\/(?!(@lljj)\/).*/, // 忽略跳过 @lljj
+    exclude: /node_modules\/(?!(@ttwork)\/).*/, // 忽略跳过 @lljj
     extensions: ['.js', '.vue'],
 })
 ```

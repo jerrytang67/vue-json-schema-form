@@ -2,31 +2,30 @@
  * Created by Liu.Jun on 2020/4/24 11:23.
  */
 
+import { ref, computed, h, watch, toRaw } from "vue";
+
+import getDefaultFormState from "@ttwork/vjsf-utils/schema/getDefaultFormState";
 
 import {
-    ref, computed, h, watch, toRaw
-} from 'vue';
+    allowAdditionalItems,
+    isFixedItems,
+    isMultiSelect
+} from "@ttwork/vjsf-utils/formUtils";
+import { getPathVal, setPathVal } from "@ttwork/vjsf-utils/vue3Utils";
+import { genId, lowerCase } from "@ttwork/vjsf-utils/utils";
 
-import getDefaultFormState from '@ttwork/vjsf-utils/schema/getDefaultFormState';
+import * as arrayMethods from "@ttwork/vjsf-utils/arrayUtils";
+import Widget from "../../components/Widget";
 
-import {
-    allowAdditionalItems, isFixedItems, isMultiSelect
-} from '@ttwork/vjsf-utils/formUtils';
-import { getPathVal, setPathVal } from '@ttwork/vjsf-utils/vue3Utils';
-import { genId, lowerCase } from '@ttwork/vjsf-utils/utils';
+import vueProps from "../props";
 
-import * as arrayMethods from '@ttwork/vjsf-utils/arrayUtils';
-import Widget from '../../components/Widget';
-
-import vueProps from '../props';
-
-import ArrayFieldNormal from './arrayTypes/ArrayFieldNormal';
-import ArrayFieldMultiSelect from './arrayTypes/ArrayFieldMultiSelect';
-import ArrayFieldTuple from './arrayTypes/ArrayFieldTuple';
-import ArrayFieldSpecialFormat from './arrayTypes/ArrayFieldSpecialFormat';
+import ArrayFieldNormal from "./arrayTypes/ArrayFieldNormal";
+import ArrayFieldMultiSelect from "./arrayTypes/ArrayFieldMultiSelect";
+import ArrayFieldTuple from "./arrayTypes/ArrayFieldTuple";
+import ArrayFieldSpecialFormat from "./arrayTypes/ArrayFieldSpecialFormat";
 
 export default {
-    name: 'ArrayField',
+    name: "ArrayField",
     props: vueProps,
     setup(props) {
         // 获取当前的值
@@ -36,7 +35,7 @@ export default {
 
             if (Array.isArray(value)) return value;
 
-            console.error('error: type array，值必须为 array 类型');
+            console.error("error: type array，值必须为 array 类型");
 
             return [];
         };
@@ -46,21 +45,31 @@ export default {
 
         // 当前 formData
         const curFormData = computed(() => getCurFormData());
-        watch(curFormData, (newVal, oldVal) => {
-            // 引用类型，当值不相等，说明是被重新赋值
-            // 这里应该对比原始值
-            if (newVal !== oldVal && toRaw(newVal) !== toRaw(oldVal) && Array.isArray(newVal)) {
-                formKeys.value = newVal.map(() => genId());
+        watch(
+            curFormData,
+            (newVal, oldVal) => {
+                // 引用类型，当值不相等，说明是被重新赋值
+                // 这里应该对比原始值
+                if (
+                    newVal !== oldVal &&
+                    toRaw(newVal) !== toRaw(oldVal) &&
+                    Array.isArray(newVal)
+                ) {
+                    formKeys.value = newVal.map(() => genId());
+                }
+            },
+            {
+                deep: true
             }
-        }, {
-            deep: true
-        });
+        );
 
         // 处理了key的formData
-        const itemsFormData = computed(() => curFormData.value.map((item, index) => ({
-            key: formKeys.value[index],
-            value: item
-        })));
+        const itemsFormData = computed(() =>
+            curFormData.value.map((item, index) => ({
+                key: formKeys.value[index],
+                value: item
+            }))
+        );
 
         // 获取一个新item
         const getNewFormDataRow = () => {
@@ -75,10 +84,7 @@ export default {
             return getDefaultFormState(itemSchema, undefined, rootSchema);
         };
 
-        const handleArrayOperate = ({
-            command,
-            data
-        }) => {
+        const handleArrayOperate = ({ command, data }) => {
             // 统一处理数组数据的 新增，删除，排序等变更
             const strategyMap = {
                 moveUp(target, { index }) {
@@ -94,7 +100,7 @@ export default {
                     target.push(newRowData);
                 },
                 batchPush(target, { pushArray }) {
-                    pushArray.forEach((item) => {
+                    pushArray.forEach(item => {
                         target.push(item);
                     });
                 },
@@ -108,16 +114,16 @@ export default {
                 let formDataPrams = data;
                 let keysParams = data;
 
-                if (command === 'add') {
+                if (command === "add") {
                     // 单个添加
                     formDataPrams = { newRowData: getNewFormDataRow() };
                     keysParams = { newRowData: genId() };
-                } else if (command === 'batchPush') {
+                } else if (command === "batchPush") {
                     // 批量添加
                     keysParams = {
                         pushArray: formDataPrams.pushArray.map(item => genId())
                     };
-                } else if (command === 'setNewTarget') {
+                } else if (command === "setNewTarget") {
                     // 设置
                     formDataPrams = {
                         formData: props.rootFormData,
@@ -126,7 +132,7 @@ export default {
                     };
                     keysParams = {
                         formData: formKeys,
-                        nodePath: 'value',
+                        nodePath: "value",
                         newTarget: formDataPrams.newTarget.map(item => genId())
                     };
                 }
@@ -151,7 +157,7 @@ export default {
                 globalOptions
             } = props;
 
-            if (!schema.hasOwnProperty('items')) {
+            if (!schema.hasOwnProperty("items")) {
                 throw new Error(`[${schema}] 请先定义 items属性`);
             }
 
@@ -169,7 +175,7 @@ export default {
             // 特殊处理 date datetime time url-upload
             // array 支持配置 ui:widget
             // 时间日期区间 或者 ui:widget 特殊配置
-            if (schema.format || schema['ui:widget'] || uiSchema['ui:widget']) {
+            if (schema.format || schema["ui:widget"] || uiSchema["ui:widget"]) {
                 return h(ArrayFieldSpecialFormat, {
                     ...props,
                     class: {
@@ -180,9 +186,11 @@ export default {
 
             // https://json-schema.org/understanding-json-schema/reference/array.html#list-validation
             // https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation
-            const CurrentField = isFixedItems(schema) ? ArrayFieldTuple : ArrayFieldNormal;
+            const CurrentField = isFixedItems(schema)
+                ? ArrayFieldTuple
+                : ArrayFieldNormal;
 
-            return h('div', [
+            return h("div", [
                 h(CurrentField, {
                     itemsFormData: itemsFormData.value,
                     ...props,
@@ -193,23 +201,28 @@ export default {
                 }),
 
                 // 插入一个Widget，校验 array - maxItems. minItems. uniqueItems 等items外的属性校验
-                props.needValidFieldGroup ? h(Widget, {
-                    key: 'validateWidget-array',
-                    class: {
-                        validateWidget: true,
-                        'validateWidget-array': true
-                    },
-                    schema: Object.entries(schema).reduce((preVal, [key, value]) => {
-                        if (key !== 'items') preVal[key] = value;
-                        return preVal;
-                    }, {}),
-                    uiSchema,
-                    errorSchema: props.errorSchema,
-                    curNodePath,
-                    rootFormData,
-                    globalOptions
-                }) : null
+                props.needValidFieldGroup
+                    ? h(Widget, {
+                          key: "validateWidget-array",
+                          class: {
+                              validateWidget: true,
+                              "validateWidget-array": true
+                          },
+                          schema: Object.entries(schema).reduce(
+                              (preVal, [key, value]) => {
+                                  if (key !== "items") preVal[key] = value;
+                                  return preVal;
+                              },
+                              {}
+                          ),
+                          uiSchema,
+                          errorSchema: props.errorSchema,
+                          curNodePath,
+                          rootFormData,
+                          globalOptions
+                      })
+                    : null
             ]);
         };
-    },
+    }
 };

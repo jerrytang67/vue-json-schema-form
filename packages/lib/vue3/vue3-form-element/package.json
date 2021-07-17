@@ -56,7 +56,7 @@
         "rollup-plugin-visualizer": "^4.0.4",
         "rollup-plugin-vue": "^6.0.0"
     },
-    "author": "Liu.Jun",
+    "author": "JerryTang",
     "browserslist": [
         "> 1%",
         "last 2 versions",

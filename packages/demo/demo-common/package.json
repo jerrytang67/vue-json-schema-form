@@ -13,7 +13,7 @@
     "homepage": "https://github.com/lljj-x/vue-json-schema-form",
     "license": "Apache-2.0",
     "private": true,
-    "author": "Liu.Jun",
+    "author": "JerryTang",
     "browserslist": [
         "> 1%",
         "last 2 versions",
